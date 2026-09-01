@@ -30,36 +30,28 @@ export async function loginAction(
       password,
       redirect: false,
     });
+    // Success — no error returned, caller handles redirect
     return {};
-  } catch (err: any) {
-    // 1. Next.js Redirect signal — sign in succeeded
-    if (err?.digest?.startsWith("NEXT_REDIRECT")) {
-      return {};
+  } catch (err) {
+    if (err instanceof AuthError) {
+      switch (err.type) {
+        case "CredentialsSignin":
+          return { error: "Invalid email or password. Please try again." };
+        default:
+          // Check for custom error messages (ACCOUNT_LOCKED, EMAIL_UNVERIFIED)
+          if (err.message?.includes("ACCOUNT_LOCKED")) {
+            return {
+              error:
+                "Your account has been temporarily locked due to multiple failed login attempts. Please try again in 15 minutes.",
+            };
+          }
+          if (err.message?.includes("EMAIL_UNVERIFIED")) {
+            return { error: "EMAIL_UNVERIFIED" };
+          }
+          return { error: "Login failed. Please try again." };
+      }
     }
-
-    // 2. Extract error message from cause or error object
-    const errorMessage = err?.cause?.message || err?.message || "";
-
-    if (errorMessage.includes("ACCOUNT_LOCKED")) {
-      return {
-        error: "Your account has been temporarily locked due to multiple failed login attempts. Please try again in 15 minutes.",
-      };
-    }
-
-    if (errorMessage.includes("EMAIL_UNVERIFIED")) {
-      return { error: "EMAIL_UNVERIFIED" };
-    }
-
-    if (
-      err?.type === "CredentialsSignin" ||
-      errorMessage.includes("CredentialsSignin") ||
-      errorMessage.includes("CallbackRouteError")
-    ) {
-      return { error: "Invalid email or password. Please try again." };
-    }
-
-    // Safe fallback to prevent server action response protocol crashes
-    return { error: "Invalid email or password. Please try again." };
+    throw err; // Re-throw unexpected errors
   }
 }
 
@@ -76,19 +68,16 @@ export async function googleLoginAction(
       redirect: false,
     });
     return {};
-  } catch (err: any) {
-    if (err?.digest?.startsWith("NEXT_REDIRECT")) {
-      return {};
+  } catch (err) {
+    if (err instanceof AuthError) {
+      if (err.message?.includes("GOOGLE_UNREGISTERED")) {
+        return {
+          error: "Access Denied. Your Google account is not pre-registered on the platform. Please contact your administrator."
+        };
+      }
+      return { error: "Google authentication failed. Please try again." };
     }
-
-    const errorMessage = err?.cause?.message || err?.message || "";
-
-    if (errorMessage.includes("GOOGLE_UNREGISTERED")) {
-      return {
-        error: "Access Denied. Your Google account is not pre-registered on the platform. Please contact your administrator."
-      };
-    }
-    return { error: "Google authentication failed. Please try again." };
+    throw err;
   }
 }
 

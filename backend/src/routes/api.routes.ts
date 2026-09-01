@@ -83,9 +83,9 @@ router.use("/upload", uploadRoutes);
 // =============================================================================
 // ROLE-BASED ACCESS CONTROL (RBAC) METADATA
 // =============================================================================
-// View-level permissions for user-roles registry management (Super Admin required).
-router.get("/roles", requirePermission("roles", "manage") as any, getRoles as any);
-router.get("/permissions", requirePermission("roles", "manage") as any, getPermissions as any);
+// View-level permissions for user-roles registry management.
+router.get("/roles", requirePermission("roles", "view") as any, getRoles as any);
+router.get("/permissions", requirePermission("roles", "view") as any, getPermissions as any);
 
 // =============================================================================
 // EMPLOYEE RESOURCE ENDPOINTS

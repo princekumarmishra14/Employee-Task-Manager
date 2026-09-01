@@ -46,7 +46,6 @@ export async function getTasks(req: AuthenticatedRequest, res: Response, next: N
     const searchParams = new URLSearchParams();
     if (req.query.page) searchParams.set("page", req.query.page.toString());
     if (req.query.pageSize) searchParams.set("pageSize", req.query.pageSize.toString());
-    if (req.query.unpaginated) searchParams.set("unpaginated", req.query.unpaginated.toString());
 
     // Execute query builder on Repository layer
     const result = await TaskRepository.findMany(filters, searchParams, req.user);

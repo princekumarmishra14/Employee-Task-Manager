@@ -172,7 +172,7 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
             roleId: employeeRole?.id ?? null,
             isActive: true,
             departmentId: dbDept.id,
-            isEmailVerified: process.env.NODE_ENV === "development",
+            isEmailVerified: false,
             emailVerificationToken: verificationToken,
             emailVerificationExpiry: verificationExpiry,
           },

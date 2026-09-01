@@ -12,18 +12,8 @@ export function filterAndSortTasks(tasks: Task[], filters: TaskFilterState): Tas
     if (!matchesSearchTerm(task, filters.searchTerm)) return false;
 
     // Status Filter
-    if (filters.statusFilter !== "ALL") {
-      if (filters.statusFilter === "ASSIGNED") {
-        if (task.status !== "ASSIGNED" && !task.assignedTo && !task.assigneeId) {
-          return false;
-        }
-      } else if (filters.statusFilter === "UNASSIGNED") {
-        if (task.status !== "UNASSIGNED" && (task.assignedTo || task.assigneeId)) {
-          return false;
-        }
-      } else if (task.status !== filters.statusFilter) {
-        return false;
-      }
+    if (filters.statusFilter !== "ALL" && task.status !== filters.statusFilter) {
+      return false;
     }
 
     // Priority Filter

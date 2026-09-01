@@ -12,10 +12,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { AuthService } from "@/services/auth.service";
 import PasswordChecklist from "./PasswordChecklist";
 import GoogleButton from "./GoogleButton";
-import DemoQuickLogin from "./DemoQuickLogin";
+import RoleQuickLogin, { DemoRole } from "./RoleQuickLogin";
 import { useGoogleLogin } from "@/hooks/useGoogleLogin";
-
-import { signIn as clientSignIn } from "next-auth/react";
 
 const loginSchema = z.object({
   email: z
@@ -109,61 +107,43 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
 
     startTransition(async () => {
       setVerificationResent(false);
-      try {
-        const result = await loginAction(formData);
-        if (result?.error) {
-          setServerError(result.error);
-        } else {
-          router.push(callbackUrl);
-          router.refresh();
-        }
-      } catch (err) {
-        const clientRes = await clientSignIn("credentials", {
-          email: data.email.toLowerCase().trim(),
-          password: data.password,
-          redirect: false,
-        });
-        if (clientRes?.error) {
-          setServerError("Invalid email or password. Please try again.");
-        } else {
-          router.push(callbackUrl);
-          router.refresh();
-        }
+      const result = await loginAction(formData);
+      if (result?.error) {
+        setServerError(result.error);
+      } else {
+        router.push(callbackUrl);
+        router.refresh();
       }
     });
   };
 
-  const handleDemoLogin = (email: string, pass: string) => {
+  const handleQuickLogin = (role: DemoRole) => {
+    const creds: Record<DemoRole, { email: string; password: string }> = {
+      SUPER_ADMIN: { email: "superadmin@etm.com", password: "SuperAdmin@123" },
+      ADMIN:       { email: "admin@etm.com", password: "Admin@123" },
+      MANAGER:     { email: "sofia.reyes@enterprise.com", password: "Manager@123" },
+      EMPLOYEE:    { email: "sarah.jenkins@enterprise.com", password: "Employee@123" },
+      VIEWER:      { email: "robert.hayes@enterprise.com", password: "Viewer@123" },
+    };
+
+    const targetCreds = creds[role];
+    if (!targetCreds) return;
+
     setServerError("");
-    setValue("email", email, { shouldValidate: true });
-    setValue("password", pass, { shouldValidate: true });
+    setValue("email", targetCreds.email, { shouldValidate: true });
+    setValue("password", targetCreds.password, { shouldValidate: true });
 
     const formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", pass);
+    formData.append("email", targetCreds.email);
+    formData.append("password", targetCreds.password);
 
     startTransition(async () => {
-      setVerificationResent(false);
-      try {
-        const result = await loginAction(formData);
-        if (result?.error) {
-          setServerError(result.error);
-        } else {
-          router.push(callbackUrl);
-          router.refresh();
-        }
-      } catch (err) {
-        const clientRes = await clientSignIn("credentials", {
-          email,
-          password: pass,
-          redirect: false,
-        });
-        if (clientRes?.error) {
-          setServerError("Invalid email or password. Please try again.");
-        } else {
-          router.push(callbackUrl);
-          router.refresh();
-        }
+      const result = await loginAction(formData);
+      if (result?.error) {
+        setServerError(result.error);
+      } else {
+        router.push(callbackUrl);
+        router.refresh();
       }
     });
   };
@@ -212,10 +192,10 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
       )}
 
       {/* Email Input Field */}
-      <div className="relative mt-3 mb-3">
+      <div className="relative mt-6 mb-5">
         <label
           htmlFor="email-input"
-          className="absolute -top-2 left-3 px-1.5 text-[11px] font-bold text-text-secondary dark:text-slate-400 bg-white dark:bg-slate-900 select-none z-10 transition-colors"
+          className="absolute -top-2 left-3 px-1.5 text-[12px] font-bold text-text-secondary dark:text-slate-400 bg-white dark:bg-slate-900 select-none z-10 transition-colors"
         >
           {isRtl ? "البريد الإلكتروني" : "Email"}
         </label>
@@ -226,23 +206,23 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
           placeholder={isRtl ? "أدخل البريد الإلكتروني" : "Enter the email"}
           disabled={isPending || isGooglePending}
           aria-invalid={!!errors.email}
-          className={`block w-full h-10 px-4 rounded-[10px] text-text-primary text-xs font-semibold bg-slate-50/20 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 focus:border-[#3B42E3] dark:focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200 ${
+          className={`block w-full h-12 px-4 rounded-[12px] text-text-primary text-sm font-semibold bg-slate-50/20 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 focus:border-[#3B42E3] dark:focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200 ${
             errors.email ? "border-status-danger focus:ring-status-danger" : ""
           }`}
           {...register("email")}
         />
         {errors.email && (
-          <p id="email-error" className="text-[10px] font-bold text-status-danger mt-1 pl-1">
+          <p id="email-error" className="text-[10px] font-bold text-status-danger mt-1.5 pl-1">
             {errors.email.message}
           </p>
         )}
       </div>
 
       {/* Password Input Field */}
-      <div className="relative mb-1">
+      <div className="relative mb-2">
         <label
           htmlFor="password-input"
-          className="absolute -top-2 left-3 px-1.5 text-[11px] font-bold text-text-secondary dark:text-slate-400 bg-white dark:bg-slate-900 select-none z-10 transition-colors"
+          className="absolute -top-2 left-3 px-1.5 text-[12px] font-bold text-text-secondary dark:text-slate-400 bg-white dark:bg-slate-900 select-none z-10 transition-colors"
         >
           {isRtl ? "كلمة المرور" : "Password"}
         </label>
@@ -253,7 +233,7 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
             autoComplete="current-password"
             placeholder={isRtl ? "أدخل كلمة المرور" : "Enter the Password"}
             disabled={isPending || isGooglePending}
-            className="block w-full h-10 px-4 pr-10 rounded-[10px] text-text-primary text-xs font-semibold bg-slate-50/20 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 focus:border-[#3B42E3] dark:focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200"
+            className="block w-full h-12 px-4 pr-10 rounded-[12px] text-text-primary text-sm font-semibold bg-slate-50/20 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 focus:border-[#3B42E3] dark:focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none placeholder-slate-400 dark:placeholder-slate-500 transition-all duration-200"
             {...register("password")}
           />
           <button
@@ -263,16 +243,16 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
             className="absolute right-3 top-1/2 -translate-y-1/2 z-10 text-text-muted/50 hover:text-text-primary transition-all duration-200 active:scale-90 cursor-pointer"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
       {/* Forgot Password Link */}
-      <div className="flex justify-end mb-3">
+      <div className="flex justify-end mb-5">
         <a
           href="/forgot-password"
-          className="text-[11px] font-bold text-text-secondary dark:text-slate-400 hover:text-[#3B42E3] dark:hover:text-brand-primary transition-colors"
+          className="text-xs font-bold text-text-secondary dark:text-slate-400 hover:text-[#3B42E3] dark:hover:text-brand-primary transition-colors"
         >
           {isRtl ? "هل نسيت كلمة المرور؟" : "Forgot password?"}
         </a>
@@ -280,7 +260,7 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
 
       {/* Password requirements list checklist (retained for user safety, styled compactly) */}
       {passwordVal.length > 0 && (
-        <div className="mb-3">
+        <div className="mb-5">
           <PasswordChecklist value={passwordVal} isRtl={isRtl} />
         </div>
       )}
@@ -292,7 +272,7 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
           type="submit"
           disabled={!isFormValid}
           aria-busy={isPending}
-          className={`w-full h-10 flex justify-center items-center gap-2 px-4 rounded-[10px] text-xs font-bold text-white transition-all duration-300
+          className={`w-full h-12 flex justify-center items-center gap-2 px-4 rounded-[12px] text-sm font-bold text-white transition-all duration-300
             ${
               !isFormValid
                 ? "bg-slate-200 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed pointer-events-none"
@@ -301,7 +281,7 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
         >
           {isPending ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              <Loader2 className="h-4.5 w-4.5 animate-spin" aria-hidden="true" />
               <span>{isRtl ? "جارٍ التحقق..." : "Signing in..."}</span>
             </>
           ) : (
@@ -311,7 +291,7 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
       </div>
 
       {/* OR separator */}
-      <div className="flex items-center gap-3 py-1 select-none">
+      <div className="flex items-center gap-3 py-2.5 select-none">
         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
         <span className="text-[10px] font-bold text-text-muted/60 tracking-wider">
           {isRtl ? "أو تابع باستخدام" : "Or continue"}
@@ -340,12 +320,22 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
         </Link>
       </div>
 
-      {/* Public Demo Quick Login Section */}
-      <DemoQuickLogin
-        onSelectDemo={handleDemoLogin}
-        isPending={isPending || isGooglePending}
-        isRtl={isRtl}
-      />
+      {/* Collapsible Demo Quick Login section at the bottom */}
+      <div className="border-t border-slate-100 dark:border-slate-800/50 mt-4 pt-2">
+        <details className="cursor-pointer group">
+          <summary className="text-[10px] font-bold text-text-muted/65 hover:text-text-primary transition-colors list-none flex items-center justify-between">
+            <span>{isRtl ? "تسجيل دخول سريع للتجربة (المطورين)" : "Developer Quick Login Roles"}</span>
+            <span className="transition-transform group-open:rotate-180">▼</span>
+          </summary>
+          <div className="pt-2">
+            <RoleQuickLogin
+              onSelect={handleQuickLogin}
+              isPending={isPending || isGooglePending}
+              isRtl={isRtl}
+            />
+          </div>
+        </details>
+      </div>
     </form>
   );
 }

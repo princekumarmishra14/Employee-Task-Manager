@@ -80,12 +80,6 @@ export function useAuth(): UseAuthReturn {
   };
 
   const logout = async () => {
-    try {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("etm-store");
-        localStorage.removeItem("etm-storage");
-      }
-    } catch (e) {}
     await signOut({ callbackUrl: "/login" });
   };
 

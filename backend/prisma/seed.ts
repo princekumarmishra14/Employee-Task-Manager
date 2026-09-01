@@ -455,68 +455,6 @@ async function main() {
     process.stdout.write(`  - ${adminEmail} (already exists)\n`);
   }
 
-  // Demo Admin Account
-  const demoAdminEmail = "demo.admin@etm.com";
-  let demoAdmin = await prisma.user.findUnique({ where: { email: demoAdminEmail } });
-  if (!demoAdmin) {
-    const pwdHash = await hashPassword("Admin@123");
-    demoAdmin = await prisma.user.create({
-      data: {
-        email: demoAdminEmail,
-        passwordHash: pwdHash,
-        roleId: roleIds["ADMIN"],
-        isActive: true,
-        isEmailVerified: true,
-      },
-    });
-    await prisma.employee.create({
-      data: {
-        userId: demoAdmin.id,
-        employeeCode: "ETM-DEMO-ADM",
-        fullName: "Rahul Sharma (Demo Admin)",
-        firstName: "Rahul",
-        lastName: "Sharma",
-        title: "Demo System Administrator",
-        isActive: true,
-        hireDate: new Date(),
-      },
-    });
-    process.stdout.write(`  ✓ ${demoAdminEmail}\n`);
-  } else {
-    process.stdout.write(`  - ${demoAdminEmail} (already exists)\n`);
-  }
-
-  // Demo Employee Account
-  const demoEmpEmail = "demo.employee@etm.com";
-  let demoEmp = await prisma.user.findUnique({ where: { email: demoEmpEmail } });
-  if (!demoEmp) {
-    const pwdHash = await hashPassword("Employee@123");
-    demoEmp = await prisma.user.create({
-      data: {
-        email: demoEmpEmail,
-        passwordHash: pwdHash,
-        roleId: roleIds["EMPLOYEE"],
-        isActive: true,
-        isEmailVerified: true,
-      },
-    });
-    await prisma.employee.create({
-      data: {
-        userId: demoEmp.id,
-        employeeCode: "ETM-DEMO-EMP",
-        fullName: "Priya Singh (Demo Employee)",
-        firstName: "Priya",
-        lastName: "Singh",
-        title: "Demo Software Engineer",
-        isActive: true,
-        hireDate: new Date(),
-      },
-    });
-    process.stdout.write(`  ✓ ${demoEmpEmail}\n`);
-  } else {
-    process.stdout.write(`  - ${demoEmpEmail} (already exists)\n`);
-  }
-
 
   // 1. DEPARTMENTS
   console.log("📁 Seeding departments...");
@@ -653,73 +591,45 @@ async function main() {
   const allAssignableIds = [...managerIds, ...employeeUserIds];
   const superAdminId = userIds[0];
 
-  // 5. TASKS (60 Total Demo Tasks)
-  console.log("\n📋 Seeding 60 demo tasks...");
-  await prisma.task.deleteMany({});
-  const taskIds: string[] = [];
+  // 5. TASKS (100)
+  console.log("\n📋 Seeding tasks...");
+  const statuses: TaskStatus[] = ["UNASSIGNED", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "OVERDUE", "ARCHIVED"];
+  const priorities: TaskPriority[] = ["LOW", "MEDIUM", "HIGH", "ESCALATED"];
+  const statusWeights = [5, 20, 30, 25, 15, 5]; // realistic distribution
 
-  const demoCompletedTitles = [
-    "Develop Employee Dashboard", "Implement Authentication API", "Create Task Management UI",
-    "Implement JWT Authentication", "Build Employee Profile Module", "Develop Admin Dashboard",
-    "Implement Task Assignment", "Create REST API Endpoints", "Add Employee Search",
-    "Implement Department Management", "Build Task Status System", "Add Role-Based Access Control",
-    "Implement Notification System", "Create Reports Module", "Optimize Database Queries",
-    "Fix Login Validation", "Improve Dashboard UI", "Implement Employee CRUD",
-    "Add Task Filtering", "Complete API Integration"
-  ];
-
-  // 20 COMPLETED tasks
-  for (let i = 0; i < 20; i++) {
-    const deptName = pick(deptNames);
-    const deptId = deptRecords[deptName];
-    const deptTeamKeys = allTeamKeys.filter((k) => k.startsWith(`${deptName}:`));
-    const teamId = teamRecords[pick(deptTeamKeys)];
-    const projectId = pick(projectIds);
-
-    const task = await prisma.task.create({
-      data: {
-        title: demoCompletedTitles[i],
-        description: `Completed task: ${demoCompletedTitles[i]}`,
-        priority: i % 2 === 0 ? "HIGH" : "MEDIUM",
-        status: "COMPLETED",
-        startDate: daysAgo(15 + i),
-        dueDate: daysAgo(1 + (i % 7)),
-        completedAt: daysAgo(1 + (i % 7)),
-        estimatedHours: 16,
-        tags: "frontend,backend,demo",
-        assigneeId: pick(allAssignableIds),
-        departmentId: deptId,
-        teamId,
-        projectId,
-        isActive: true,
-        createdBy: "seed",
-        updatedBy: "seed",
-      },
-    });
-    taskIds.push(task.id);
+  function weightedStatus(): TaskStatus {
+    const total = statusWeights.reduce((a, b) => a + b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < statuses.length; i++) {
+      r -= statusWeights[i];
+      if (r <= 0) return statuses[i];
+    }
+    return "IN_PROGRESS";
   }
 
-  // 25 IN_PROGRESS tasks (5 Overdue)
-  for (let i = 0; i < 25; i++) {
-    const isOverdueTask = i < 5;
+  const taskIds: string[] = [];
+  for (let i = 0; i < 100; i++) {
+    const status = weightedStatus();
+    const assigneeId = status === "UNASSIGNED" ? null : pick(allAssignableIds);
     const deptName = pick(deptNames);
     const deptId = deptRecords[deptName];
     const deptTeamKeys = allTeamKeys.filter((k) => k.startsWith(`${deptName}:`));
     const teamId = teamRecords[pick(deptTeamKeys)];
     const projectId = pick(projectIds);
+    const daysOffset = status === "OVERDUE" ? randInt(-30, -1) : randInt(1, 90);
 
     const task = await prisma.task.create({
       data: {
         title: TASK_TITLES[i % TASK_TITLES.length],
         description: pick(TASK_DESCRIPTIONS),
-        priority: isOverdueTask ? "ESCALATED" : pick(["LOW", "MEDIUM", "HIGH"]),
-        status: "IN_PROGRESS",
-        startDate: daysAgo(10 + i),
-        dueDate: isOverdueTask ? daysAgo(3 + i) : daysFromNow(4 + i),
-        completedAt: null,
-        estimatedHours: 24,
-        tags: isOverdueTask ? "overdue,urgent" : "dev,sprint",
-        assigneeId: pick(allAssignableIds),
+        priority: pick(priorities),
+        status,
+        dueDate: daysFromNow(daysOffset),
+        startDate: daysAgo(randInt(0, 30)),
+        completedAt: status === "COMPLETED" ? daysAgo(randInt(1, 14)) : null,
+        estimatedHours: pick([null, 8, 16, 24, 40, 80]),
+        tags: pick(["backend,api", "frontend,ui", "infra,devops", "security", "analytics,data", "mobile", ""]),
+        assigneeId,
         departmentId: deptId,
         teamId,
         projectId,
@@ -729,39 +639,8 @@ async function main() {
       },
     });
     taskIds.push(task.id);
+    if ((i + 1) % 10 === 0) process.stdout.write(`  ✓ ${i + 1} tasks seeded\n`);
   }
-
-  // 15 UNASSIGNED tasks
-  for (let i = 0; i < 15; i++) {
-    const deptName = pick(deptNames);
-    const deptId = deptRecords[deptName];
-    const deptTeamKeys = allTeamKeys.filter((k) => k.startsWith(`${deptName}:`));
-    const teamId = teamRecords[pick(deptTeamKeys)];
-    const projectId = pick(projectIds);
-
-    const task = await prisma.task.create({
-      data: {
-        title: `Pending Review: ${TASK_TITLES[(i + 30) % TASK_TITLES.length]}`,
-        description: `Newly logged pending task awaiting assignment.`,
-        priority: pick(["LOW", "MEDIUM", "HIGH"]),
-        status: "UNASSIGNED",
-        startDate: daysFromNow(1),
-        dueDate: daysFromNow(7 + i),
-        completedAt: null,
-        estimatedHours: 8,
-        tags: "backlog,unassigned",
-        assigneeId: null,
-        departmentId: deptId,
-        teamId,
-        projectId,
-        isActive: true,
-        createdBy: "seed",
-        updatedBy: "seed",
-      },
-    });
-    taskIds.push(task.id);
-  }
-  process.stdout.write(`  ✓ 60 demo tasks seeded (20 Completed, 25 In Progress, 15 Unassigned, 5 Overdue)\n`);
 
   // 6. COMMENTS
   console.log("\n💬 Seeding comments...");

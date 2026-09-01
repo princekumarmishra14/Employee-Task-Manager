@@ -38,13 +38,8 @@ export class TaskStatisticsService {
 
     const where: Prisma.TaskWhereInput = {
       deletedAt: null,
-      ...(filters.status && (
-        filters.status === TaskStatus.ASSIGNED
-          ? { OR: [{ status: TaskStatus.ASSIGNED }, { assigneeId: { not: null } }] }
-          : filters.status === TaskStatus.UNASSIGNED
-          ? { OR: [{ status: TaskStatus.UNASSIGNED }, { assigneeId: null }] }
-          : { status: filters.status }
-      )),
+      isActive: true,
+      ...(filters.status && { status: filters.status }),
       ...(filters.priority && { priority: filters.priority }),
       ...(isEmployee ? { assigneeId: user?.id } : (filters.assigneeId && { assigneeId: filters.assigneeId })),
       ...(filters.departmentId && { departmentId: filters.departmentId }),
@@ -424,7 +419,7 @@ export class TaskStatisticsService {
 
     const totalTasksCount = tasks.length;
     const completedTasksCount = statusCounts["COMPLETED"] || 0;
-    const overallCompletionRate = totalTasksCount > 0 ? Number(((completedTasksCount / totalTasksCount) * 100).toFixed(2)) : 0;
+    const overallCompletionRate = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
 
     const recentTasksFormatted = recentTasksRaw.map((t) => ({
       id: t.id,

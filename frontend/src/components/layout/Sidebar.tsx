@@ -107,7 +107,7 @@ const ADMIN_NAV: NavItem[] = [
 export default function Sidebar({ onCloseMobile, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const { t, isRtl } = useTranslation();
-  const { user: authUser, can } = useAuth();
+  const { user: authUser, can, logout } = useAuth();
   const { employees, currentUser } = useDBStore();
 
   const currentUserProfile = employees.find(e => e.id === authUser?.id || e.email === authUser?.email) || currentUser || authUser;
@@ -293,19 +293,22 @@ export default function Sidebar({ onCloseMobile, isCollapsed = false, onToggleCo
         </Link>
 
         {/* Logout */}
-        <form action={logoutAction} className="w-full">
-          <button
-            id="sidebar-logout-btn"
-            type="submit"
-            aria-label="Sign out"
-            className={`flex items-center gap-2 rounded-xl border border-border-clean py-2 text-xs font-bold transition-all duration-200 hover:bg-status-danger-bg hover:border-status-danger/30 hover:text-status-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-status-danger w-full ${
-              isCollapsed ? "justify-center px-2" : "justify-start px-3"
-            }`}
-          >
-            <LogOut className="h-4 w-4 shrink-0" />
-            {!isCollapsed && <span>{t.navLogout}</span>}
-          </button>
-        </form>
+        <button
+          id="sidebar-logout-btn"
+          type="button"
+          onClick={async (e) => {
+            e.preventDefault();
+            if (onCloseMobile) onCloseMobile();
+            await logout();
+          }}
+          aria-label="Sign out"
+          className={`flex items-center gap-2 rounded-xl border border-border-clean py-2 text-xs font-bold transition-all duration-200 hover:bg-status-danger-bg hover:border-status-danger/30 hover:text-status-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-status-danger w-full cursor-pointer ${
+            isCollapsed ? "justify-center px-2" : "justify-start px-3"
+          }`}
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          {!isCollapsed && <span>{t.navLogout}</span>}
+        </button>
       </div>
     </aside>
   );

@@ -14,10 +14,16 @@ export default function Footer() {
         {isRtl ? "© ٢٠٢٦ منصة ETM. جميع الحقوق محفوظة." : "© 2026 ETM Platform. All rights reserved."}
       </span>
 
-      {/* Center Column: Security status validation */}
-      <div className="flex items-center gap-1.5 py-1 sm:py-0 justify-center">
-        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-        <span>{isRtl ? "أمان عالي المستوى" : "Enterprise Grade Security"}</span>
+      {/* Center Column: Demo Version notice & Security badge */}
+      <div className="flex items-center gap-2 py-1 sm:py-0 justify-center">
+        <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-extrabold normal-case tracking-normal text-[10px] border border-indigo-500/20">
+          {isRtl ? "نسخة تجريبية — مخصصة للعرض والتوظيف" : "Demo Environment — Created for Portfolio & Recruitment Demonstration"}
+        </span>
+        <span className="h-3 w-px bg-slate-400/20 hidden md:inline-block" />
+        <div className="hidden md:flex items-center gap-1">
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+          <span>{isRtl ? "أمان عالي المستوى" : "Enterprise Grade Security"}</span>
+        </div>
       </div>
 
       {/* Right Column: Legal policy items */}

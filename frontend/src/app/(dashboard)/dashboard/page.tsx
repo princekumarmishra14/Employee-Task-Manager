@@ -287,8 +287,8 @@ export default function DashboardPage() {
                   title={isRtl ? "إجمالي المهام" : "Total Tasks"}
                   value={stats?.tasks.total ?? 0}
                   icon={<ListTodo className="h-5 w-5 text-brand-primary" />}
-                  trend={{ value: stats?.tasks.completedThisWeek ?? 0, isPositive: (stats?.tasks.completedThisWeek ?? 0) > 0 }}
-                  description={isRtl ? "المسجلة في النظام" : `${stats?.tasks.completedThisMonth ?? 0} completed this month`}
+                  trend={{ value: stats?.analytics.overallCompletionRate ?? 0, isPositive: true }}
+                  description={isRtl ? "المسجلة في النظام" : `${stats?.tasks.completed ?? 0} completed`}
                   cardType="total"
                   onClick={() => router.push("/tasks")}
                 />
@@ -296,16 +296,16 @@ export default function DashboardPage() {
                   title={isRtl ? "قيد الانتظار" : "Pending / Unassigned"}
                   value={stats?.tasks.unassigned ?? 0}
                   icon={<Clock className="h-5 w-5 text-status-warning" />}
-                  description={isRtl ? "بانتظار التعيين" : `${stats?.tasks.assigned ?? 0} assigned, awaiting action`}
+                  description={isRtl ? "بانتظار التعيين" : "Waiting for action"}
                   cardType="pending"
                   isPositive={(stats?.tasks.unassigned ?? 0) === 0}
-                  onClick={() => router.push("/tasks?status=PENDING")}
+                  onClick={() => router.push("/tasks?status=UNASSIGNED")}
                 />
                 <TaskSummaryCard
                   title={isRtl ? "قيد التنفيذ" : "In Progress"}
                   value={stats?.tasks.inProgress ?? 0}
                   icon={<Activity className="h-5 w-5 text-status-info" />}
-                  description={isRtl ? "يتم العمل عليها" : "Active development sprints"}
+                  description={isRtl ? "يتم العمل عليها" : "Active development tasks"}
                   cardType="progress"
                   isPositive={(stats?.tasks.inProgress ?? 0) > 0}
                   onClick={() => router.push("/tasks?status=IN_PROGRESS")}
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                   title={isRtl ? "المهام المكتملة" : "Completed Tasks"}
                   value={stats?.tasks.completed ?? 0}
                   icon={<CheckCircle2 className="h-5 w-5 text-status-success" />}
-                  trend={{ value: stats?.analytics.overallCompletionRate ?? 0, isPositive: (stats?.analytics.overallCompletionRate ?? 0) >= 50 }}
+                  trend={{ value: stats?.analytics.overallCompletionRate ?? 0, isPositive: (stats?.analytics.overallCompletionRate ?? 0) >= 30 }}
                   description={isRtl ? "مكتملة بنجاح" : `${stats?.analytics.overallCompletionRate ?? 0}% completion rate`}
                   cardType="completed"
                   onClick={() => router.push("/tasks?status=COMPLETED")}
@@ -420,7 +420,7 @@ export default function DashboardPage() {
                       />
                     </div>
                     <p className="mt-1.5 text-xs text-text-muted font-semibold">
-                      {stats?.tasks.completedToday ?? 0} {isRtl ? "مكتملة اليوم" : "completed today"}
+                      {stats?.tasks.completed ?? 0} {isRtl ? "مكتملة" : "completed"}
                     </p>
                   </div>
                 </div>

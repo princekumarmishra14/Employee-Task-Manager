@@ -37,12 +37,10 @@ export function useDashboard(): UseDashboardReturn {
     }
   }, [syncOperationalData]);
 
-  // Initial trigger to load Operational Data if empty
+  // Always trigger refresh on mount to load fresh live data from backend
   useEffect(() => {
-    if (tasks.length === 0) {
-      refresh();
-    }
-  }, [tasks.length, refresh]);
+    refresh();
+  }, [refresh]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -91,7 +89,7 @@ export function useDashboard(): UseDashboardReturn {
     const completedThisWeek = activeTasks.filter(t => t.status === "COMPLETED" && new Date(t.updatedAt) >= startOfWeek).length;
     const completedThisMonth = activeTasks.filter(t => t.status === "COMPLETED" && new Date(t.updatedAt) >= startOfMonth).length;
 
-    const overallCompletionRate = activeTasks.length > 0 ? Math.round((statusCounts.completed / activeTasks.length) * 100) : 0;
+    const overallCompletionRate = activeTasks.length > 0 ? Number(((statusCounts.completed / activeTasks.length) * 100).toFixed(2)) : 0;
 
     const recentTasks = activeTasks.slice(0, 8).map(t => ({
       id: t.id,

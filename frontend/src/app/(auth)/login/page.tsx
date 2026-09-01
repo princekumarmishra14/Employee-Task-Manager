@@ -40,27 +40,27 @@ function WelcomeLoginPageContent() {
         <div className="w-full max-w-[1024px] bg-white dark:bg-slate-900 rounded-[28px] shadow-[0_24px_60px_rgba(99,102,241,0.08)] border border-slate-200/50 dark:border-slate-800/50 p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 items-stretch min-h-[640px] transition-all duration-300">
           
           {/* LEFT COLUMN: Input Form & Brand Logo */}
-          <div className="flex flex-col justify-between p-6 sm:p-10 lg:p-12">
+          <div className="flex flex-col justify-between p-4 sm:p-6 lg:p-7">
             {/* Logo from mockup */}
-            <div className="flex items-center gap-2.5 select-none mb-6 lg:mb-0">
-              <div className="h-8 w-8 rounded-lg bg-[#3B42E3] flex items-center justify-center shadow-md">
-                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <div className="flex items-center gap-2 select-none mb-3 lg:mb-0">
+              <div className="h-7 w-7 rounded-lg bg-[#3B42E3] flex items-center justify-center shadow-md">
+                <svg className="h-4.5 w-4.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 11l3 3L22 4" />
                   <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                 </svg>
               </div>
-              <span className="text-2xl font-extrabold tracking-tight text-slate-850 dark:text-white">
+              <span className="text-xl font-extrabold tracking-tight text-slate-850 dark:text-white">
                 Employee Task Manager
               </span>
             </div>
 
             {/* Form Section */}
-            <div className="my-auto py-6">
-              <div className="space-y-1.5 mb-7 select-none">
-                <h2 className="text-3xl font-black text-text-primary tracking-tight">
+            <div className="my-auto py-2">
+              <div className="space-y-1 mb-4 select-none">
+                <h2 className="text-2xl font-black text-text-primary tracking-tight">
                   {isRtl ? "مرحباً بك مجدداً!" : "Welcome Back!"}
                 </h2>
-                <p className="text-sm font-semibold text-text-muted">
+                <p className="text-xs font-semibold text-text-muted">
                   {isRtl ? "الرجاء إدخال تفاصيل تسجيل الدخول أدناه" : "Please enter login details below"}
                 </p>
               </div>

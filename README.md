@@ -86,12 +86,12 @@ The project includes pre-configured environment files for local development:
 * Backend: `backend/.env`
 * Frontend: `frontend/.env.local`
 
-### Backend (`backend/.env`)
+### Backend (`backend/.env.example`)
 ```env
 PORT=5001
 NODE_ENV=development
-DATABASE_URL="postgresql://admin:adminpassword@localhost:5432/employee_task_manager?schema=public"
-JWT_SECRET="cY7JsCije9NceA+ADwHUZWBqUnzCTwnS/B2IutAFBzw="
+DATABASE_URL="postgresql://username:password@localhost:5432/employee_task_manager?schema=public"
+JWT_SECRET="your_jwt_secret_key_here"
 JWT_EXPIRES_IN="8h"
 JWT_REFRESH_EXPIRES_IN="30d"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -108,12 +108,12 @@ GOOGLE_CLIENT_ID="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="YOUR_GOOGLE_CLIENT_SECRET"
 ```
 
-### Frontend (`frontend/.env.local`)
+### Frontend (`frontend/.env.example`)
 ```env
-AUTH_SECRET="cY7JsCije9NceA+ADwHUZWBqUnzCTwnS/B2IutAFBzw="
+AUTH_SECRET="your_auth_secret_key_here"
 NEXTAUTH_URL="http://localhost:3000"
 AUTH_URL="http://localhost:3000/api/auth"
-NEXTAUTH_SECRET="cY7JsCije9NceA+ADwHUZWBqUnzCTwnS/B2IutAFBzw="
+NEXTAUTH_SECRET="your_nextauth_secret_key_here"
 NEXT_PUBLIC_APP_NAME="Employee Task Manager"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 NEXT_PUBLIC_API_URL="http://localhost:5001/api"

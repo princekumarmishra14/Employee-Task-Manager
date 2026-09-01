@@ -1,0 +1,71 @@
+import {
+  Sparkles,
+  RefreshCw,
+  ShieldCheck,
+  BarChart3,
+  Users,
+  ClipboardCheck,
+  Lock,
+  Award,
+  Globe,
+  KeyRound,
+  Sun,
+  Moon,
+  Monitor,
+  Eye,
+  EyeOff,
+  Mail,
+  Building,
+  Rocket,
+  Check,
+  X,
+  ShieldAlert,
+  Settings,
+  Cpu,
+  LineChart,
+  Brain,
+  Activity,
+  UserCheck
+} from "lucide-react";
+
+export const icons = {
+  features: {
+    sync: RefreshCw,
+    rbac: ShieldCheck,
+    analytics: BarChart3,
+    automation: Sparkles,
+    collaboration: Users,
+    security: Lock,
+  },
+  ai: {
+    prioritization: Brain,
+    insights: Cpu,
+    balancing: Activity,
+    recommendations: UserCheck,
+  },
+  metrics: {
+    users: Users,
+    organizations: Building,
+    tasks: ClipboardCheck,
+    uptime: Rocket,
+  },
+  compliance: {
+    award: Award,
+    iso: ShieldCheck,
+    gdpr: Globe,
+    encryption: KeyRound,
+  },
+  actions: {
+    sun: Sun,
+    moon: Moon,
+    system: Monitor,
+    eye: Eye,
+    eyeOff: EyeOff,
+    mail: Mail,
+    check: Check,
+    x: X,
+    alert: ShieldAlert,
+    settings: Settings,
+  }
+};
+export type Icons = typeof icons;

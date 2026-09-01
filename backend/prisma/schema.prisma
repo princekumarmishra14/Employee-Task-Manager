@@ -1,0 +1,517 @@
+// =============================================================================
+// DATABASE SCHEMA DOCUMENTATION
+// Project: Employee Task Manager
+// Engine: SQLite (Local Zero-Dependency DBMS) / PostgreSQL Compatible
+// ORM: Prisma Client
+// =============================================================================
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum TaskStatus {
+  UNASSIGNED
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+  ARCHIVED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  ESCALATED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  PERMISSION_CHANGE
+  STATUS_CHANGE
+  ASSIGNMENT_CHANGE
+  ROLE_CHANGE
+  ACTIVATION
+  DEACTIVATION
+}
+
+enum AuditEntity {
+  USER
+  EMPLOYEE
+  TASK
+  DEPARTMENT
+  TEAM
+  PROJECT
+  COMMENT
+  SETTINGS
+  SESSION
+}
+
+enum ActivityType {
+  TASK_CREATED
+  TASK_UPDATED
+  TASK_DELETED
+  TASK_STATUS_CHANGED
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  EMPLOYEE_JOINED
+  EMPLOYEE_UPDATED
+  EMPLOYEE_DEACTIVATED
+  PROJECT_CREATED
+  TEAM_UPDATED
+  COMMENT_ADDED
+}
+
+// =============================================================================
+// DEPARTMENT
+// =============================================================================
+
+model Department {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  headId      String?   @map("head_id")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by")
+  updatedBy   String?   @map("updated_by")
+
+  users    User[]
+  teams    Team[]
+  projects Project[]
+  tasks    Task[]
+
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("departments")
+}
+
+// =============================================================================
+// TEAM
+// =============================================================================
+
+model Team {
+  id           String    @id @default(uuid())
+  name         String
+  departmentId String    @map("department_id")
+  leadId       String?   @map("lead_id")
+  description  String?
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    String?   @map("created_by")
+  updatedBy    String?   @map("updated_by")
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  users      User[]
+  tasks      Task[]
+  projects   Project[]
+
+  @@unique([name, departmentId])
+  @@index([departmentId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("teams")
+}
+
+// =============================================================================
+// PROJECT
+// =============================================================================
+
+model Project {
+  id           String    @id @default(uuid())
+  name         String
+  description  String?
+  departmentId String?   @map("department_id")
+  teamId       String?   @map("team_id")
+  managerId    String?   @map("manager_id")
+  startDate    DateTime? @map("start_date")
+  endDate      DateTime? @map("end_date")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  createdBy    String?   @map("created_by")
+  updatedBy    String?   @map("updated_by")
+
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  team       Team?       @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  tasks      Task[]
+
+  @@index([departmentId])
+  @@index([teamId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("projects")
+}
+
+// =============================================================================
+// USER (Authentication + Authorization entity)
+// =============================================================================
+
+model User {
+  id                   String    @id @default(uuid())
+  email                String    @unique
+  passwordHash         String    @map("password_hash")
+  roleId               String?   @map("role_id")
+  departmentId         String?   @map("department_id")
+  teamId               String?   @map("team_id")
+  isActive             Boolean   @default(true) @map("is_active")
+  isEmailVerified      Boolean   @default(false) @map("is_email_verified")
+  lastLoginAt          DateTime? @map("last_login_at")
+  failedLoginAttempts  Int       @default(0) @map("failed_login_attempts")
+  lockedUntil          DateTime? @map("locked_until")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  deletedAt            DateTime? @map("deleted_at")
+  createdBy            String?   @map("created_by")
+  updatedBy            String?   @map("updated_by")
+  googleId             String?   @unique @map("google_id")
+  provider             String?   @default("credentials") @map("provider")
+  loginMethod          String?   @default("credentials") @map("login_method")
+  createdByGoogle      Boolean?  @default(false) @map("created_by_google")
+  emailVerificationToken  String?   @map("email_verification_token")
+  emailVerificationExpiry DateTime? @map("email_verification_expiry")
+  resetPasswordOTPHash    String?   @map("reset_password_otp_hash")
+  resetPasswordOTPExpiry  DateTime? @map("reset_password_otp_expiry")
+  otpResendAttempts       Int       @default(0) @map("otp_resend_attempts")
+  otpResendCooldown       DateTime? @map("otp_resend_cooldown")
+  otpVerifyAttempts       Int       @default(0) @map("otp_verify_attempts")
+  lastPasswordChange      DateTime? @map("last_password_change")
+  lastLoginIP             String?   @map("last_login_ip")
+  lastLoginDevice         String?   @map("last_login_device")
+
+  department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  team          Team?          @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  role          Role?          @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  employee      Employee?
+  sessions      Session[]
+  loginHistory  LoginHistory[]
+  assignedTasks Task[]         @relation("Assignee")
+  notifications Notification[]
+  activities    Activity[]     @relation("ActivityActor")
+  passwordResetTokens PasswordResetToken[]
+
+  @@index([email])
+  @@index([roleId])
+  @@index([departmentId])
+  @@index([teamId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+// =============================================================================
+// EMPLOYEE (Profile entity — 1:1 with User)
+// =============================================================================
+
+model Employee {
+  id           String    @id @default(uuid())
+  userId       String    @unique @map("user_id")
+  employeeCode String    @unique @map("employee_code")
+  fullName     String    @map("full_name")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  title        String
+  phone        String?
+  avatarUrl    String?   @map("avatar_url")
+  hireDate     DateTime  @map("hire_date")
+  bio          String?
+  linkedInUrl  String?   @map("linkedin_url")
+  location     String?
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([employeeCode])
+  @@index([fullName])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("employees")
+}
+
+// =============================================================================
+// SESSION
+// =============================================================================
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  userAgent String?  @map("user_agent")
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// =============================================================================
+// TASK
+// =============================================================================
+
+model Task {
+  id             String       @id @default(uuid())
+  title          String
+  description    String
+  priority       TaskPriority @default(MEDIUM)
+  status         TaskStatus   @default(UNASSIGNED)
+  dueDate        DateTime     @map("due_date")
+  startDate      DateTime     @default(now()) @map("start_date")
+  completedAt    DateTime?    @map("completed_at")
+  estimatedHours Int?         @map("estimated_hours")
+  tags           String?
+  isActive       Boolean      @default(true) @map("is_active")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  deletedAt      DateTime?    @map("deleted_at")
+  createdBy      String       @map("created_by")
+  updatedBy      String       @map("updated_by")
+
+  assigneeId   String?  @map("assignee_id")
+  departmentId String?  @map("department_id")
+  teamId       String?  @map("team_id")
+  projectId    String?  @map("project_id")
+
+  assignee   User?       @relation("Assignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  team       Team?       @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  project    Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  comments   Comment[]
+  activities Activity[]  @relation("TaskActivities")
+
+  @@index([status])
+  @@index([priority])
+  @@index([assigneeId])
+  @@index([departmentId])
+  @@index([teamId])
+  @@index([projectId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@index([dueDate])
+  @@index([status, isActive])
+  @@index([assigneeId, status])
+  @@index([departmentId, status])
+  @@map("tasks")
+}
+
+// =============================================================================
+// COMMENT
+// =============================================================================
+
+model Comment {
+  id         String   @id @default(uuid())
+  taskId     String   @map("task_id")
+  authorId   String?  @map("author_id")
+  authorName String   @map("author_name")
+  content    String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("comments")
+}
+
+// =============================================================================
+// NOTIFICATION
+// =============================================================================
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  isRead    Boolean  @default(false) @map("is_read")
+  link      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// =============================================================================
+// AUDIT LOG
+// =============================================================================
+
+model AuditLog {
+  id            String      @id @default(uuid())
+  action        AuditAction
+  entity        AuditEntity
+  entityId      String      @map("entity_id")
+  entityName    String?     @map("entity_name")
+  details       String
+  previousValue String?     @map("previous_value")
+  newValue      String?     @map("new_value")
+  performedById String?     @map("performed_by_id")
+  performedBy   String      @map("performed_by")
+  ipAddress     String?     @map("ip_address")
+  userAgent     String?     @map("user_agent")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([entity])
+  @@index([action])
+  @@index([performedById])
+  @@index([entityId])
+  @@map("audit_logs")
+}
+
+// =============================================================================
+// ACTIVITY FEED
+// =============================================================================
+
+model Activity {
+  id          String       @id @default(uuid())
+  type        ActivityType
+  title       String
+  description String?
+  actorId     String?      @map("actor_id")
+  actorName   String       @map("actor_name")
+  actorAvatar String?      @map("actor_avatar")
+  entityId    String?      @map("entity_id")
+  entityType  String?      @map("entity_type")
+  entityName  String?      @map("entity_name")
+  taskId      String?      @map("task_id")
+  metadata    String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  actor  User? @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+  task   Task? @relation("TaskActivities", fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([actorId])
+  @@index([entityId])
+  @@index([taskId])
+  @@index([createdAt])
+  @@index([type])
+  @@map("activities")
+}
+
+// =============================================================================
+// ROLES & PERMISSIONS
+// =============================================================================
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users           User[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  module      String
+  action      String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rolePermissions RolePermission[]
+
+  @@unique([module, action])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @map("role_id")
+  permissionId String @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// =============================================================================
+// LOGIN HISTORY
+// =============================================================================
+
+model LoginHistory {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  status    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("login_history")
+}
+
+// =============================================================================
+// PASSWORD RESET TOKENS
+// =============================================================================
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("password_reset_tokens")
+}
+
+// =============================================================================
+// EMAIL QUEUE
+// =============================================================================
+
+model EmailQueue {
+  id          String    @id @default(uuid())
+  to          String
+  subject     String
+  html        String
+  status      String    @default("PENDING")
+  attempts    Int       @default(0) @map("attempts")
+  maxAttempts Int       @default(3) @map("max_attempts")
+  lastError   String?   @map("last_error")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_queue")
+}

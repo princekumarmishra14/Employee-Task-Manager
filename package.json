@@ -1,0 +1,34 @@
+{
+  "name": "employee-task-manager",
+  "version": "2.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm install --prefix frontend && npm install --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "build:frontend": "npm run build --prefix frontend",
+    "build:backend": "npm run build --prefix backend",
+    "build": "npm run build:backend && npm run build:frontend",
+    "type-check:frontend": "npm run type-check --prefix frontend",
+    "type-check:backend": "npm run type-check --prefix backend",
+    "type-check": "npm run type-check:backend && npm run type-check:frontend",
+    "lint:frontend": "npm run lint --prefix frontend",
+    "lint:backend": "npm run lint --prefix backend",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "db:migrate": "npm run db:migrate --prefix backend",
+    "db:seed": "npm run db:seed --prefix backend",
+    "db:push": "npm run db:push --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "overrides": {
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  }
+}

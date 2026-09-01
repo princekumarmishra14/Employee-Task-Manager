@@ -1,0 +1,385 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F5F7FB;
+  --foreground: #0F172A;
+
+  --bg-primary: #F5F7FB;
+  --bg-secondary: rgba(255, 255, 255, 0.82);
+  --bg-tertiary: #EEF4FF;
+  --brand-primary: #4F46E5;
+  --brand-secondary: #7C3AED;
+  --brand-muted: #F2FBFF;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --border-clean: rgba(148, 163, 184, 0.18);
+  --border-hover: rgba(148, 163, 184, 0.30);
+
+  --status-success: #10B981;
+  --status-success-bg: #ecfdf5;
+  --status-warning: #F59E0B;
+  --status-warning-bg: #fffbeb;
+  --status-danger: #ef4444;
+  --status-danger-bg: #fef2f2;
+  --status-info: #0EA5E9;
+  --status-info-bg: #f0f9ff;
+}
+
+.dark {
+  --background: #000000;
+  --foreground: #fafafa;
+
+  --bg-primary: #09090b;
+  --bg-secondary: #000000;
+  --bg-tertiary: #18181b;
+  --brand-primary: #6366f1;
+  --brand-secondary: #818cf8;
+  --brand-muted: #1e1b4b;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+  --border-clean: #27272a;
+  --border-hover: #3f3f46;
+
+  --status-success: #34d399;
+  --status-success-bg: #064e3b;
+  --status-warning: #fbbf24;
+  --status-warning-bg: #78350f;
+  --status-danger: #f87171;
+  --status-danger-bg: #7f1d1d;
+  --status-info: #38bdf8;
+  --status-info-bg: #0c4a6e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-poppins), sans-serif;
+  --font-poppins: var(--font-poppins), sans-serif;
+
+  /* Slate shades for custom backgrounds */
+  --color-slate-850: #1e293b;
+  --color-slate-950: #020617;
+  --color-gray-750: #262e3f;
+  --color-gray-850: #1e293b;
+  --color-gray-250: #e2e8f0;
+  --color-gray-505: #94a3b8;
+  --color-gray-450: #64748b;
+  --color-gray-150: #f1f5f9;
+  --color-gray-805: #1e293b;
+  --color-gray-855: #1e293b;
+  --color-gray-455: #ef4444;
+
+  /* Redesign Semantic Colors */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-muted: var(--brand-muted);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-border-clean: var(--border-clean);
+  --color-border-hover: var(--border-hover);
+  --color-status-success: var(--status-success);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-bg: var(--status-danger-bg);
+  --color-status-info: var(--status-info);
+  --color-status-info-bg: var(--status-info-bg);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+.desktop-no-scroll {
+  @media (min-width: 1024px) {
+    height: 100vh;
+    overflow: hidden !important;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), system-ui, -apple-system, sans-serif;
+}
+
+/* Animations for LTR and RTL drawer panels */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* RTL Helpers */
+[dir="rtl"] .dir-ltr {
+  direction: ltr;
+}
+
+/* Premium SaaS Design System Utilities */
+.bg-mesh-gradient {
+  background-color: #090d16;
+  background-image:
+    radial-gradient(at 0% 20%, rgba(30, 41, 59, 0.4) 0px, transparent 50%),
+    radial-gradient(at 40% 40%, rgba(15, 23, 42, 0.6) 0px, transparent 65%),
+    radial-gradient(at 80% 10%, rgba(30, 41, 59, 0.3) 0px, transparent 50%),
+    radial-gradient(at 100% 80%, rgba(15, 23, 42, 0.6) 0px, transparent 60%),
+    radial-gradient(at 10% 90%, rgba(30, 41, 59, 0.3) 0px, transparent 55%);
+}
+
+:where(.light, .light *) .bg-mesh-gradient {
+  background-color: #F5F7FB;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.10) 0px, transparent 55%),
+    radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.10) 0px, transparent 55%),
+    radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 55%),
+    radial-gradient(at 100% 100%, rgba(251, 191, 36, 0.06) 0px, transparent 55%);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 30px;
+}
+
+:where(.dark, .dark *) .glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 30px;
+}
+
+.shadow-glow-primary {
+  box-shadow: 0 0 25px 3px rgba(79, 70, 229, 0.12);
+}
+
+.shadow-glow-success {
+  box-shadow: 0 0 25px 3px rgba(16, 185, 129, 0.12);
+}
+
+.shadow-glow-warning {
+  box-shadow: 0 0 25px 3px rgba(245, 158, 11, 0.12);
+}
+
+.shadow-glow-danger {
+  box-shadow: 0 0 25px 3px rgba(239, 68, 68, 0.12);
+}
+
+/* Hover scales and premium animations */
+.hover-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.15);
+}
+
+:where(.dark, .dark *) .hover-glow:hover {
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px 1px rgba(99, 102, 241, 0.15);
+}
+
+.text-gradient-indigo {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:where(.dark, .dark *) .text-gradient-indigo {
+  background: linear-gradient(135deg, #818cf8 0%, #a5b4fc 50%, #e0e7ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Animation Utilities ─────────────────────────────────────────────────── */
+
+/* Skeleton loading pulse */
+@keyframes skeleton-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse {
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+
+/* Slide-up fade-in for page content */
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up-fade 0.35s ease-out both;
+}
+
+/* Toast progress bar shrink */
+@keyframes shrink-progress {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+.animate-shrink-progress {
+  animation: shrink-progress 3.5s linear forwards;
+}
+
+/* Modal fade + zoom-in */
+@keyframes fade-in-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-in.fade-in {
+  animation: fade-in-zoom 0.2s ease-out both;
+}
+
+.animate-in.zoom-in-95 {
+  animation: fade-in-zoom 0.2s ease-out both;
+}
+
+/* Staggered card entry */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-1 {
+  animation: card-enter 0.3s ease-out 0.05s both;
+}
+
+.stagger-2 {
+  animation: card-enter 0.3s ease-out 0.1s both;
+}
+
+.stagger-3 {
+  animation: card-enter 0.3s ease-out 0.15s both;
+}
+
+.stagger-4 {
+  animation: card-enter 0.3s ease-out 0.2s both;
+}
+
+/* Sidebar token widths */
+:root {
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+}
+
+/* ─── Auth Animation Utilities ───────────────────────────────────────────── */
+
+/* Live password checklist checkmark bounce */
+@keyframes check-bounce {
+  0% {
+    transform: scale(0) rotate(-12deg);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.25) rotate(4deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.animate-check-bounce {
+  animation: check-bounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Signup success screen scale-in */
+@keyframes success-scale {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-success-scale {
+  animation: success-scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Spin animation for loading spinners */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}

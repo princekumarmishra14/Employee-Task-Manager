@@ -1,0 +1,1 @@
+import { PrismaClient } from "@prisma/client"; const prisma = new PrismaClient(); async function count() { console.log("Users:", await prisma.user.count()); console.log("SuperAdmins:", await prisma.user.findMany({where:{email: "superadmin@etm.com"}})); } count();

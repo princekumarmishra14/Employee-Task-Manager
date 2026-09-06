@@ -44,14 +44,16 @@ export async function apiFetch<T>(
     });
 
     // Handle session expiry — redirect to login
+    const globalObj = typeof globalThis !== "undefined" ? (globalThis as Record<string, unknown>) : undefined;
+    const win = globalObj?.["window"] as { location: { pathname: string; href: string } } | undefined;
     if (res.status === 401) {
-      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-        window.location.href = "/login";
+      if (win && win.location.pathname !== "/login") {
+        win.location.href = "/login";
       }
       return { success: false, error: "Session expired. Please log in again." };
     }
 
-    const json = await res.json();
+    const json = (await res.json()) as { error?: string; data?: T; meta?: ApiResult<T>["meta"] };
 
     if (!res.ok) {
       return { success: false, error: json.error ?? "Something went wrong." };

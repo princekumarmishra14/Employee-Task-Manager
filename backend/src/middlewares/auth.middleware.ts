@@ -13,23 +13,48 @@
  */
 
 import { Request, Response, NextFunction } from "express";
+import * as core from "express-serve-static-core";
 import jwt from "jsonwebtoken";
 
 // JWT Secret Key Resolution (supports unified Auth.js / NextAuth environment variable configurations)
 const JWT_SECRET = process.env.AUTH_SECRET || process.env.JWT_SECRET || "cY7JsCije9NceA+ADwHUZWBqUnzCTwnS/B2IutAFBzw=";
 
 /**
- * Enterprise Request Interface Extension.
- * Enriches standard Express Request payload with the authenticated user context object.
+ * Structure of the authenticated user payload decoded from JWT and bound to requests.
  */
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;          // Database UUID of the authenticated user
-    email: string;       // User login credential email
-    role: string;        // RBAC role string (e.g. SUPER_ADMIN, MANAGER, etc.)
-    employeeId: string | null; // Profile association index
-    title: string | null;      // Organizational title
-  };
+export interface AuthenticatedUser {
+  id: string;                // Database UUID of the authenticated user
+  email: string;             // User login credential email
+  role: string;              // RBAC role string (e.g. SUPER_ADMIN, MANAGER, etc.)
+  employeeId: string | null; // Profile association index
+  title: string | null;      // Organizational title
+}
+
+/**
+ * Declaration merging on Express namespace.
+ * Ensures req.user is recognized across all Express middleware and controllers.
+ */
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthenticatedUser;
+    }
+  }
+}
+
+/**
+ * Enterprise Request Interface Extension.
+ * Enriches standard Express Request payload with the authenticated user context object,
+ * ensuring body, params, query, headers, ip, and other Express properties are fully available.
+ */
+export interface AuthenticatedRequest<
+  P = core.ParamsDictionary,
+  ResBody = any,
+  ReqBody = any,
+  ReqQuery = core.Query,
+  Locals extends Record<string, any> = Record<string, any>
+> extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
+  user?: AuthenticatedUser;
 }
 
 /**

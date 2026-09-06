@@ -25,6 +25,7 @@
     "db:push": "npm run db:push --prefix backend"
   },
   "devDependencies": {
+    "@types/node": "^20",
     "concurrently": "^8.2.2"
   },
   "overrides": {

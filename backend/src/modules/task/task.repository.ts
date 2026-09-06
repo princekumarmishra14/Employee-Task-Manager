@@ -131,7 +131,7 @@ export class TaskRepository {
     dueDate: Date;
     startDate?: Date;
     estimatedHours?: number | null;
-    tags?: string;
+    tags?: string | null;
     assigneeId?: string | null;
     departmentId?: string | null;
     teamId?: string | null;
@@ -170,7 +170,7 @@ export class TaskRepository {
     priority?: TaskPriority;
     dueDate?: Date;
     estimatedHours?: number | null;
-    tags?: string;
+    tags?: string | null;
     assigneeId?: string | null;
     departmentId?: string | null;
     teamId?: string | null;

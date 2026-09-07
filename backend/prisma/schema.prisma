@@ -1,22 +1,18 @@
 // =============================================================================
 // DATABASE SCHEMA DOCUMENTATION
 // Project: Employee Task Manager
-// Engine: SQLite (Local Zero-Dependency DBMS) / PostgreSQL Compatible
+// Engine: PostgreSQL (Standard Relational DBMS)
 // ORM: Prisma Client
 // =============================================================================
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
 }
-
-// =============================================================================
-// ENUMS
-// =============================================================================
 
 enum TaskStatus {
   UNASSIGNED
@@ -75,21 +71,17 @@ enum ActivityType {
   COMMENT_ADDED
 }
 
-// =============================================================================
-// DEPARTMENT
-// =============================================================================
-
 model Department {
-  id          String    @id @default(uuid())
-  name        String    @unique
-  description String?
-  headId      String?   @map("head_id")
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique @db.VarChar(100)
+  description String?   @db.Text
+  headId      String?   @map("head_id") @db.Uuid
   isActive    Boolean   @default(true) @map("is_active")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
-  createdBy   String?   @map("created_by")
-  updatedBy   String?   @map("updated_by")
+  createdBy   String?   @map("created_by") @db.VarChar(255)
+  updatedBy   String?   @map("updated_by") @db.VarChar(255)
 
   users    User[]
   teams    Team[]
@@ -101,22 +93,18 @@ model Department {
   @@map("departments")
 }
 
-// =============================================================================
-// TEAM
-// =============================================================================
-
 model Team {
-  id           String    @id @default(uuid())
-  name         String
-  departmentId String    @map("department_id")
-  leadId       String?   @map("lead_id")
-  description  String?
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @db.VarChar(100)
+  departmentId String    @map("department_id") @db.Uuid
+  leadId       String?   @map("lead_id") @db.Uuid
+  description  String?   @db.Text
   isActive     Boolean   @default(true) @map("is_active")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
-  createdBy    String?   @map("created_by")
-  updatedBy    String?   @map("updated_by")
+  createdBy    String?   @map("created_by") @db.VarChar(255)
+  updatedBy    String?   @map("updated_by") @db.VarChar(255)
 
   department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   users      User[]
@@ -130,25 +118,21 @@ model Team {
   @@map("teams")
 }
 
-// =============================================================================
-// PROJECT
-// =============================================================================
-
 model Project {
-  id           String    @id @default(uuid())
-  name         String
-  description  String?
-  departmentId String?   @map("department_id")
-  teamId       String?   @map("team_id")
-  managerId    String?   @map("manager_id")
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @db.VarChar(200)
+  description  String?   @db.Text
+  departmentId String?   @map("department_id") @db.Uuid
+  teamId       String?   @map("team_id") @db.Uuid
+  managerId    String?   @map("manager_id") @db.Uuid
   startDate    DateTime? @map("start_date")
   endDate      DateTime? @map("end_date")
   isActive     Boolean   @default(true) @map("is_active")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
-  createdBy    String?   @map("created_by")
-  updatedBy    String?   @map("updated_by")
+  createdBy    String?   @map("created_by") @db.VarChar(255)
+  updatedBy    String?   @map("updated_by") @db.VarChar(255)
 
   department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   team       Team?       @relation(fields: [teamId], references: [id], onDelete: SetNull)
@@ -161,17 +145,13 @@ model Project {
   @@map("projects")
 }
 
-// =============================================================================
-// USER (Authentication + Authorization entity)
-// =============================================================================
-
 model User {
-  id                   String    @id @default(uuid())
-  email                String    @unique
-  passwordHash         String    @map("password_hash")
-  roleId               String?   @map("role_id")
-  departmentId         String?   @map("department_id")
-  teamId               String?   @map("team_id")
+  id                   String    @id @default(uuid()) @db.Uuid
+  email                String    @unique @db.VarChar(255)
+  passwordHash         String    @map("password_hash") @db.VarChar(255)
+  roleId               String?   @map("role_id") @db.Uuid
+  departmentId         String?   @map("department_id") @db.Uuid
+  teamId               String?   @map("team_id") @db.Uuid
   isActive             Boolean   @default(true) @map("is_active")
   isEmailVerified      Boolean   @default(false) @map("is_email_verified")
   lastLoginAt          DateTime? @map("last_login_at")
@@ -180,22 +160,22 @@ model User {
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
   deletedAt            DateTime? @map("deleted_at")
-  createdBy            String?   @map("created_by")
-  updatedBy            String?   @map("updated_by")
-  googleId             String?   @unique @map("google_id")
-  provider             String?   @default("credentials") @map("provider")
-  loginMethod          String?   @default("credentials") @map("login_method")
+  createdBy            String?   @map("created_by") @db.VarChar(255)
+  updatedBy            String?   @map("updated_by") @db.VarChar(255)
+  googleId             String?   @unique @map("google_id") @db.VarChar(255)
+  provider             String?   @default("credentials") @map("provider") @db.VarChar(50)
+  loginMethod          String?   @default("credentials") @map("login_method") @db.VarChar(50)
   createdByGoogle      Boolean?  @default(false) @map("created_by_google")
-  emailVerificationToken  String?   @map("email_verification_token")
+  emailVerificationToken  String?   @map("email_verification_token") @db.VarChar(255)
   emailVerificationExpiry DateTime? @map("email_verification_expiry")
-  resetPasswordOTPHash    String?   @map("reset_password_otp_hash")
+  resetPasswordOTPHash    String?   @map("reset_password_otp_hash") @db.VarChar(255)
   resetPasswordOTPExpiry  DateTime? @map("reset_password_otp_expiry")
   otpResendAttempts       Int       @default(0) @map("otp_resend_attempts")
   otpResendCooldown       DateTime? @map("otp_resend_cooldown")
   otpVerifyAttempts       Int       @default(0) @map("otp_verify_attempts")
   lastPasswordChange      DateTime? @map("last_password_change")
-  lastLoginIP             String?   @map("last_login_ip")
-  lastLoginDevice         String?   @map("last_login_device")
+  lastLoginIP             String?   @map("last_login_ip") @db.VarChar(50)
+  lastLoginDevice         String?   @map("last_login_device") @db.VarChar(255)
 
   department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   team          Team?          @relation(fields: [teamId], references: [id], onDelete: SetNull)
@@ -217,24 +197,20 @@ model User {
   @@map("users")
 }
 
-// =============================================================================
-// EMPLOYEE (Profile entity — 1:1 with User)
-// =============================================================================
-
 model Employee {
-  id           String    @id @default(uuid())
-  userId       String    @unique @map("user_id")
-  employeeCode String    @unique @map("employee_code")
-  fullName     String    @map("full_name")
-  firstName    String    @map("first_name")
-  lastName     String    @map("last_name")
-  title        String
-  phone        String?
-  avatarUrl    String?   @map("avatar_url")
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @unique @map("user_id") @db.Uuid
+  employeeCode String    @unique @map("employee_code") @db.VarChar(20)
+  fullName     String    @map("full_name") @db.VarChar(200)
+  firstName    String    @map("first_name") @db.VarChar(100)
+  lastName     String    @map("last_name") @db.VarChar(100)
+  title        String    @db.VarChar(150)
+  phone        String?   @db.VarChar(30)
+  avatarUrl    String?   @map("avatar_url") @db.VarChar(500)
   hireDate     DateTime  @map("hire_date")
-  bio          String?
-  linkedInUrl  String?   @map("linkedin_url")
-  location     String?
+  bio          String?   @db.Text
+  linkedInUrl  String?   @map("linkedin_url") @db.VarChar(500)
+  location     String?   @db.VarChar(200)
   isActive     Boolean   @default(true) @map("is_active")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
@@ -249,17 +225,13 @@ model Employee {
   @@map("employees")
 }
 
-// =============================================================================
-// SESSION
-// =============================================================================
-
 model Session {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  token     String   @unique
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique @db.VarChar(500)
   expiresAt DateTime @map("expires_at")
-  userAgent String?  @map("user_agent")
-  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent") @db.VarChar(500)
+  ipAddress String?  @map("ip_address") @db.VarChar(50)
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -270,32 +242,28 @@ model Session {
   @@map("sessions")
 }
 
-// =============================================================================
-// TASK
-// =============================================================================
-
 model Task {
-  id             String       @id @default(uuid())
-  title          String
-  description    String
+  id             String       @id @default(uuid()) @db.Uuid
+  title          String       @db.VarChar(500)
+  description    String       @db.Text
   priority       TaskPriority @default(MEDIUM)
   status         TaskStatus   @default(UNASSIGNED)
   dueDate        DateTime     @map("due_date")
   startDate      DateTime     @default(now()) @map("start_date")
   completedAt    DateTime?    @map("completed_at")
   estimatedHours Int?         @map("estimated_hours")
-  tags           String?
+  tags           String?      @db.VarChar(500)
   isActive       Boolean      @default(true) @map("is_active")
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
   deletedAt      DateTime?    @map("deleted_at")
-  createdBy      String       @map("created_by")
-  updatedBy      String       @map("updated_by")
+  createdBy      String       @map("created_by") @db.VarChar(255)
+  updatedBy      String       @map("updated_by") @db.VarChar(255)
 
-  assigneeId   String?  @map("assignee_id")
-  departmentId String?  @map("department_id")
-  teamId       String?  @map("team_id")
-  projectId    String?  @map("project_id")
+  assigneeId   String?  @map("assignee_id") @db.Uuid
+  departmentId String?  @map("department_id") @db.Uuid
+  teamId       String?  @map("team_id") @db.Uuid
+  projectId    String?  @map("project_id") @db.Uuid
 
   assignee   User?       @relation("Assignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
@@ -319,16 +287,12 @@ model Task {
   @@map("tasks")
 }
 
-// =============================================================================
-// COMMENT
-// =============================================================================
-
 model Comment {
-  id         String   @id @default(uuid())
-  taskId     String   @map("task_id")
-  authorId   String?  @map("author_id")
-  authorName String   @map("author_name")
-  content    String
+  id         String   @id @default(uuid()) @db.Uuid
+  taskId     String   @map("task_id") @db.Uuid
+  authorId   String?  @map("author_id") @db.Uuid
+  authorName String   @map("author_name") @db.VarChar(200)
+  content    String   @db.Text
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
@@ -338,17 +302,13 @@ model Comment {
   @@map("comments")
 }
 
-// =============================================================================
-// NOTIFICATION
-// =============================================================================
-
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  title     String
-  message   String
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String   @db.VarChar(300)
+  message   String   @db.Text
   isRead    Boolean  @default(false) @map("is_read")
-  link      String?
+  link      String?  @db.VarChar(500)
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -358,23 +318,19 @@ model Notification {
   @@map("notifications")
 }
 
-// =============================================================================
-// AUDIT LOG
-// =============================================================================
-
 model AuditLog {
-  id            String      @id @default(uuid())
+  id            String      @id @default(uuid()) @db.Uuid
   action        AuditAction
   entity        AuditEntity
-  entityId      String      @map("entity_id")
-  entityName    String?     @map("entity_name")
-  details       String
-  previousValue String?     @map("previous_value")
-  newValue      String?     @map("new_value")
-  performedById String?     @map("performed_by_id")
-  performedBy   String      @map("performed_by")
-  ipAddress     String?     @map("ip_address")
-  userAgent     String?     @map("user_agent")
+  entityId      String      @map("entity_id") @db.VarChar(255)
+  entityName    String?     @map("entity_name") @db.VarChar(500)
+  details       String      @db.Text
+  previousValue String?     @map("previous_value") @db.Text
+  newValue      String?     @map("new_value") @db.Text
+  performedById String?     @map("performed_by_id") @db.Uuid
+  performedBy   String      @map("performed_by") @db.VarChar(255)
+  ipAddress     String?     @map("ip_address") @db.VarChar(50)
+  userAgent     String?     @map("user_agent") @db.VarChar(500)
   createdAt     DateTime    @default(now()) @map("created_at")
 
   @@index([createdAt])
@@ -385,23 +341,19 @@ model AuditLog {
   @@map("audit_logs")
 }
 
-// =============================================================================
-// ACTIVITY FEED
-// =============================================================================
-
 model Activity {
-  id          String       @id @default(uuid())
+  id          String       @id @default(uuid()) @db.Uuid
   type        ActivityType
-  title       String
-  description String?
-  actorId     String?      @map("actor_id")
-  actorName   String       @map("actor_name")
-  actorAvatar String?      @map("actor_avatar")
-  entityId    String?      @map("entity_id")
-  entityType  String?      @map("entity_type")
-  entityName  String?      @map("entity_name")
-  taskId      String?      @map("task_id")
-  metadata    String?
+  title       String       @db.VarChar(500)
+  description String?      @db.Text
+  actorId     String?      @map("actor_id") @db.Uuid
+  actorName   String       @map("actor_name") @db.VarChar(255)
+  actorAvatar String?      @map("actor_avatar") @db.VarChar(500)
+  entityId    String?      @map("entity_id") @db.VarChar(255)
+  entityType  String?      @map("entity_type") @db.VarChar(50)
+  entityName  String?      @map("entity_name") @db.VarChar(500)
+  taskId      String?      @map("task_id") @db.Uuid
+  metadata    String?      @db.Text
   createdAt   DateTime     @default(now()) @map("created_at")
 
   actor  User? @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
@@ -415,14 +367,10 @@ model Activity {
   @@map("activities")
 }
 
-// =============================================================================
-// ROLES & PERMISSIONS
-// =============================================================================
-
 model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
   isSystem    Boolean  @default(false) @map("is_system")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -434,10 +382,10 @@ model Role {
 }
 
 model Permission {
-  id          String   @id @default(uuid())
-  module      String
-  action      String
-  description String?
+  id          String   @id @default(uuid()) @db.Uuid
+  module      String   @db.VarChar(100)
+  action      String   @db.VarChar(50)
+  description String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
 
   rolePermissions RolePermission[]
@@ -447,8 +395,8 @@ model Permission {
 }
 
 model RolePermission {
-  roleId       String @map("role_id")
-  permissionId String @map("permission_id")
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
 
   role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
@@ -457,16 +405,12 @@ model RolePermission {
   @@map("role_permissions")
 }
 
-// =============================================================================
-// LOGIN HISTORY
-// =============================================================================
-
 model LoginHistory {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  ipAddress String?  @map("ip_address")
-  userAgent String?  @map("user_agent")
-  status    String
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  ipAddress String?  @map("ip_address") @db.VarChar(50)
+  userAgent String?  @map("user_agent") @db.VarChar(500)
+  status    String   @db.VarChar(20)
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -476,14 +420,10 @@ model LoginHistory {
   @@map("login_history")
 }
 
-// =============================================================================
-// PASSWORD RESET TOKENS
-// =============================================================================
-
 model PasswordResetToken {
-  id        String    @id @default(uuid())
-  userId    String    @map("user_id")
-  token     String    @unique
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  token     String    @unique @db.VarChar(255)
   expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -495,19 +435,15 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
-// =============================================================================
-// EMAIL QUEUE
-// =============================================================================
-
 model EmailQueue {
-  id          String    @id @default(uuid())
-  to          String
-  subject     String
-  html        String
-  status      String    @default("PENDING")
+  id          String    @id @default(uuid()) @db.Uuid
+  to          String    @db.VarChar(255)
+  subject     String    @db.VarChar(255)
+  html        String    @db.Text
+  status      String    @default("PENDING") @db.VarChar(20)
   attempts    Int       @default(0) @map("attempts")
   maxAttempts Int       @default(3) @map("max_attempts")
-  lastError   String?   @map("last_error")
+  lastError   String?   @map("last_error") @db.Text
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 

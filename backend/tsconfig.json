@@ -3,7 +3,8 @@
     "target": "ES2020",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "DOM"],
+    "types": ["node"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
@@ -15,5 +16,11 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "src/test-smtp-gmail.ts",
+    "src/testConnection.ts",
+    "src/verifyUser.ts"
+  ]
 }

@@ -119,11 +119,8 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
 
   const handleQuickLogin = (role: DemoRole) => {
     const creds: Record<DemoRole, { email: string; password: string }> = {
-      SUPER_ADMIN: { email: "superadmin@etm.com", password: "SuperAdmin@123" },
-      ADMIN:       { email: "admin@etm.com", password: "Admin@123" },
-      MANAGER:     { email: "sofia.reyes@enterprise.com", password: "Manager@123" },
-      EMPLOYEE:    { email: "sarah.jenkins@enterprise.com", password: "Employee@123" },
-      VIEWER:      { email: "robert.hayes@enterprise.com", password: "Viewer@123" },
+      ADMIN:    { email: "demo.admin@etm.com", password: "Admin@123" },
+      EMPLOYEE: { email: "demo.employee@etm.com", password: "Employee@123" },
     };
 
     const targetCreds = creds[role];

@@ -455,6 +455,120 @@ async function main() {
     process.stdout.write(`  - ${adminEmail} (already exists)\n`);
   }
 
+  // 0.1 PUBLIC DEMO ACCOUNTS (demo.admin@etm.com & demo.employee@etm.com)
+  console.log("🌟 Seeding Public Demo Accounts (demo.admin@etm.com & demo.employee@etm.com)...");
+
+  const demoAdminEmail = "demo.admin@etm.com";
+  let demoAdmin = await prisma.user.findUnique({ where: { email: demoAdminEmail } });
+  const demoAdminPwdHash = await hashPassword("Admin@123");
+  if (!demoAdmin) {
+    demoAdmin = await prisma.user.create({
+      data: {
+        email: demoAdminEmail,
+        passwordHash: demoAdminPwdHash,
+        roleId: roleIds["ADMIN"],
+        isActive: true,
+        isEmailVerified: true,
+      },
+    });
+    await prisma.employee.create({
+      data: {
+        userId: demoAdmin.id,
+        employeeCode: "DEMO-ADM-001",
+        fullName: "Demo Admin",
+        firstName: "Demo",
+        lastName: "Admin",
+        title: "Administrator (Demo)",
+        isActive: true,
+        hireDate: new Date(),
+      },
+    });
+    process.stdout.write(`  ✓ ${demoAdminEmail}\n`);
+  } else {
+    await prisma.user.update({
+      where: { id: demoAdmin.id },
+      data: {
+        roleId: roleIds["ADMIN"],
+        isActive: true,
+        isEmailVerified: true,
+        passwordHash: demoAdminPwdHash,
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+    const existingEmp = await prisma.employee.findUnique({ where: { userId: demoAdmin.id } });
+    if (!existingEmp) {
+      await prisma.employee.create({
+        data: {
+          userId: demoAdmin.id,
+          employeeCode: "DEMO-ADM-001",
+          fullName: "Demo Admin",
+          firstName: "Demo",
+          lastName: "Admin",
+          title: "Administrator (Demo)",
+          isActive: true,
+          hireDate: new Date(),
+        },
+      });
+    }
+    process.stdout.write(`  ✓ ${demoAdminEmail} (verified)\n`);
+  }
+
+  const demoEmployeeEmail = "demo.employee@etm.com";
+  let demoEmployee = await prisma.user.findUnique({ where: { email: demoEmployeeEmail } });
+  const demoEmpPwdHash = await hashPassword("Employee@123");
+  if (!demoEmployee) {
+    demoEmployee = await prisma.user.create({
+      data: {
+        email: demoEmployeeEmail,
+        passwordHash: demoEmpPwdHash,
+        roleId: roleIds["EMPLOYEE"],
+        isActive: true,
+        isEmailVerified: true,
+      },
+    });
+    await prisma.employee.create({
+      data: {
+        userId: demoEmployee.id,
+        employeeCode: "DEMO-EMP-001",
+        fullName: "Demo Employee",
+        firstName: "Demo",
+        lastName: "Employee",
+        title: "Software Engineer (Demo)",
+        isActive: true,
+        hireDate: new Date(),
+      },
+    });
+    process.stdout.write(`  ✓ ${demoEmployeeEmail}\n`);
+  } else {
+    await prisma.user.update({
+      where: { id: demoEmployee.id },
+      data: {
+        roleId: roleIds["EMPLOYEE"],
+        isActive: true,
+        isEmailVerified: true,
+        passwordHash: demoEmpPwdHash,
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+    const existingEmp = await prisma.employee.findUnique({ where: { userId: demoEmployee.id } });
+    if (!existingEmp) {
+      await prisma.employee.create({
+        data: {
+          userId: demoEmployee.id,
+          employeeCode: "DEMO-EMP-001",
+          fullName: "Demo Employee",
+          firstName: "Demo",
+          lastName: "Employee",
+          title: "Software Engineer (Demo)",
+          isActive: true,
+          hireDate: new Date(),
+        },
+      });
+    }
+    process.stdout.write(`  ✓ ${demoEmployeeEmail} (verified)\n`);
+  }
 
   // 1. DEPARTMENTS
   console.log("📁 Seeding departments...");
@@ -554,6 +668,15 @@ async function main() {
     const deptTeamKeys = allTeamKeys.filter((k) => k.startsWith(`${deptName}:`));
     const teamKey = pick(deptTeamKeys);
     const teamId = teamRecords[teamKey];
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      userIds.push(existingUser.id);
+      if (emp.role === "MANAGER") managerIds.push(existingUser.id);
+      if (emp.role === "EMPLOYEE") employeeUserIds.push(existingUser.id);
+      process.stdout.write(`  - [${emp.role}] ${emp.firstName} ${emp.lastName} <${email}> (already exists)\n`);
+      continue;
+    }
 
     const user = await prisma.user.create({
       data: {
@@ -761,12 +884,9 @@ async function main() {
   console.log(`  Activities  : 50`);
   console.log(`  Notifications: ${notifCount}`);
   console.log("═══════════════════════════════════════════════");
-  console.log("\n🔑 DEMO LOGIN CREDENTIALS");
-  console.log("  SUPER_ADMIN : amira.alharbi@enterprise.com  / admin123");
-  console.log("  ADMIN       : marcus.sterling@enterprise.com / admin123");
-  console.log("  MANAGER     : sofia.reyes@enterprise.com    / manager123");
-  console.log("  EMPLOYEE    : sarah.jenkins@enterprise.com  / employee123");
-  console.log("  VIEWER      : robert.hayes@enterprise.com   / viewer123");
+  console.log("\n🔑 PUBLIC DEMO LOGIN CREDENTIALS");
+  console.log("  Demo Admin    : demo.admin@etm.com    / Admin@123    (Role: ADMIN)");
+  console.log("  Demo Employee : demo.employee@etm.com / Employee@123 (Role: EMPLOYEE)");
   console.log("═══════════════════════════════════════════════\n");
 }
 

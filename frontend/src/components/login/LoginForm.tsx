@@ -320,21 +320,13 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
         </Link>
       </div>
 
-      {/* Collapsible Demo Quick Login section at the bottom */}
-      <div className="border-t border-slate-100 dark:border-slate-800/50 mt-4 pt-2">
-        <details className="cursor-pointer group">
-          <summary className="text-[10px] font-bold text-text-muted/65 hover:text-text-primary transition-colors list-none flex items-center justify-between">
-            <span>{isRtl ? "تسجيل دخول سريع للتجربة (المطورين)" : "Developer Quick Login Roles"}</span>
-            <span className="transition-transform group-open:rotate-180">▼</span>
-          </summary>
-          <div className="pt-2">
-            <RoleQuickLogin
-              onSelect={handleQuickLogin}
-              isPending={isPending || isGooglePending}
-              isRtl={isRtl}
-            />
-          </div>
-        </details>
+      {/* Demo Quick Login section */}
+      <div className="mt-4 pt-1">
+        <RoleQuickLogin
+          onSelect={handleQuickLogin}
+          isPending={isPending || isGooglePending}
+          isRtl={isRtl}
+        />
       </div>
     </form>
   );

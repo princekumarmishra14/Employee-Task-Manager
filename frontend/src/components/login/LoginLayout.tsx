@@ -8,7 +8,7 @@ interface LoginLayoutProps {
 
 export default function LoginLayout({ children }: LoginLayoutProps) {
   return (
-    <div className="desktop-no-scroll min-h-screen lg:h-screen w-full relative overflow-x-hidden flex flex-col justify-between bg-[#F5F7FB] dark:bg-[#060A17] text-text-primary dark:text-white font-poppins transition-colors duration-300">
+    <div className="min-h-screen w-full relative overflow-x-hidden overflow-y-auto flex flex-col justify-between bg-[#F5F7FB] dark:bg-[#060A17] text-text-primary dark:text-white font-poppins transition-colors duration-300">
       {/* ── Background Mesh Grid & Ambient Orbs ── */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
         {/* Dynamic mesh gradient */}
@@ -38,7 +38,7 @@ export default function LoginLayout({ children }: LoginLayoutProps) {
       </div>
 
       {/* ── Content layers ── */}
-      <div className="relative z-10 w-full h-full flex flex-col justify-between flex-1">
+      <div className="relative z-10 w-full min-h-full flex flex-col justify-between flex-1">
         {children}
       </div>
     </div>

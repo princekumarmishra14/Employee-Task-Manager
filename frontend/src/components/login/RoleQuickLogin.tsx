@@ -42,19 +42,25 @@ export default function RoleQuickLogin({ onSelect, isPending, isRtl = false }: R
   ];
 
   return (
-    <div className="mt-4 border-t border-[rgba(148,163,184,0.12)] pt-3.5 select-none">
-      <p className="text-center text-[9px] font-black text-text-muted uppercase tracking-widest mb-2.5">
-        {isRtl ? "تسجيل دخول سريع للصلاحيات المحاكاة" : "ENTERPRISE ROLE QUICK LOGIN (DEMO)"}
-      </p>
+    <div className="border-t border-slate-200/80 dark:border-slate-800/80 pt-3.5 select-none">
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
+        <span className="text-[10px] font-black text-text-muted dark:text-slate-400 uppercase tracking-widest">
+          {isRtl ? "تسجيل دخول تجريبي سريع" : "Demo Login / Quick Credentials"}
+        </span>
+        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
+      </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[9px] font-bold tracking-wider">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[11px] font-bold tracking-wide">
         {roles.filter((r) => !r.fullWidth).map((role) => (
           <button
             key={role.id}
+            id={`demo-login-${role.id.toLowerCase().replace('_', '-')}`}
             type="button"
+            title={`Quick login as ${role.title}`}
             onClick={() => onSelect(role.id)}
             disabled={isPending}
-            className={`py-1.5 px-2 text-center rounded-xl transition-all active:scale-95 disabled:opacity-50 cursor-pointer ${role.colorClass}`}
+            className={`py-2 px-2 text-center rounded-xl transition-all duration-150 active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs ${role.colorClass}`}
           >
             {role.title}
           </button>
@@ -64,10 +70,12 @@ export default function RoleQuickLogin({ onSelect, isPending, isRtl = false }: R
       {roles.filter((r) => r.fullWidth).map((role) => (
         <button
           key={role.id}
+          id={`demo-login-${role.id.toLowerCase().replace('_', '-')}`}
           type="button"
+          title={`Quick login as ${role.title}`}
           onClick={() => onSelect(role.id)}
           disabled={isPending}
-          className={`mt-1.5 w-full py-2.5 px-3 text-center text-[9px] font-bold uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 cursor-pointer ${role.colorClass} rounded-xl`}
+          className={`mt-1.5 w-full py-2 px-3 text-center text-[11px] font-bold tracking-wide transition-all duration-150 active:scale-95 disabled:opacity-50 cursor-pointer ${role.colorClass} rounded-xl shadow-xs`}
         >
           {role.title}
         </button>

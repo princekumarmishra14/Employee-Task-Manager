@@ -96,10 +96,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 .desktop-no-scroll {
-  @media (min-width: 1024px) {
-    height: 100vh;
-    overflow: hidden !important;
-  }
+  min-height: 100vh;
+  overflow-y: auto;
 }
 
 body {

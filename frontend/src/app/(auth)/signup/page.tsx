@@ -254,7 +254,7 @@ function SignupPageContent() {
         <div className="w-full max-w-[1024px] bg-white dark:bg-slate-900 rounded-[28px] shadow-[0_24px_60px_rgba(99,102,241,0.08)] border border-slate-200/50 dark:border-slate-800/50 p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6 items-stretch min-h-[640px] transition-all duration-300">
           
           {/* LEFT COLUMN: Stepper Wizard Form */}
-          <div className="flex flex-col justify-between p-6 sm:p-10 lg:p-12">
+          <div className="flex flex-col justify-between p-4 sm:p-8 lg:p-10">
             {/* Logo and Wizard Header */}
             <div className="flex items-center justify-between select-none mb-6 lg:mb-0">
               <div className="flex items-center gap-2.5">
@@ -277,7 +277,7 @@ function SignupPageContent() {
             </div>
 
             {/* Form Section */}
-            <div className="my-auto py-6">
+            <div className="my-auto py-3 sm:py-6">
               {showSuccess ? (
                 <SuccessScreen name={successName} />
               ) : (
@@ -695,15 +695,15 @@ function SignupPageContent() {
                   )}
 
                   {/* Stepper Actions Bar */}
-                  <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/60 mt-6 pt-4">
+                  <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/60 mt-6 pt-4 gap-3 flex-wrap sm:flex-nowrap">
                     {step > 1 ? (
                       <button
                         type="button"
                         onClick={() => setStep((s) => s - 1)}
-                        className="h-12 px-6 rounded-[12px] text-sm font-bold text-text-secondary hover:text-text-primary border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        className="h-11 sm:h-12 px-5 sm:px-6 rounded-[12px] text-sm font-bold text-text-secondary hover:text-text-primary border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                       >
                         <ChevronLeft className="h-4.5 w-4.5" />
-                        <span>Back</span>
+                        <span>{isRtl ? "رجوع" : "Back"}</span>
                       </button>
                     ) : (
                       <div />
@@ -719,9 +719,9 @@ function SignupPageContent() {
                           const valid = await trigger(fields as any);
                           if (valid) setStep((s) => s + 1);
                         }}
-                        className="h-12 px-6 rounded-[12px] text-sm font-bold text-white bg-[#3B42E3] hover:bg-[#2A31C8] flex items-center gap-1.5 cursor-pointer shadow-sm ml-auto transition-colors"
+                        className="h-11 sm:h-12 px-5 sm:px-6 rounded-[12px] text-sm font-bold text-white bg-[#3B42E3] hover:bg-[#2A31C8] flex items-center gap-1.5 cursor-pointer shadow-sm ml-auto transition-colors"
                       >
-                        <span>Next</span>
+                        <span>{isRtl ? "التالي" : "Next"}</span>
                         <ChevronRight className="h-4.5 w-4.5" />
                       </button>
                     ) : (
@@ -729,7 +729,7 @@ function SignupPageContent() {
                         id="signup-submit-btn"
                         type="submit"
                         disabled={isPending || !isValid}
-                        className={`h-12 px-6 rounded-[12px] text-sm font-bold text-white flex items-center gap-1.5 cursor-pointer shadow-sm
+                        className={`h-11 sm:h-12 px-5 sm:px-6 rounded-[12px] text-sm font-bold text-white flex items-center gap-1.5 cursor-pointer shadow-sm ml-auto
                           ${
                             isPending || !isValid
                               ? "bg-slate-300 dark:bg-slate-800 text-text-muted/60 cursor-not-allowed pointer-events-none"
@@ -739,12 +739,12 @@ function SignupPageContent() {
                         {isPending ? (
                           <>
                             <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                            <span>Creating Account...</span>
+                            <span>{isRtl ? "جارٍ إنشاء الحساب..." : "Creating Account..."}</span>
                           </>
                         ) : (
                           <>
                             <ShieldCheck className="h-4.5 w-4.5" />
-                            <span>Create Account</span>
+                            <span>{isRtl ? "إنشاء الحساب" : "Create Account"}</span>
                           </>
                         )}
                       </button>
@@ -780,7 +780,7 @@ function SignupPageContent() {
                       href="/login"
                       className="font-bold text-[#3B42E3] hover:underline"
                     >
-                      {isRtl ? "تسجيل الدخول" : "Sign In"}
+                      {isRtl ? "تسجيل الدخول" : "Log In"}
                     </Link>
                   </div>
 

@@ -17,6 +17,7 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
+import { API_BASE_URL } from "@/config/api";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -46,7 +47,7 @@ export const authConfig: NextAuthConfig = {
 
         if (googleIdToken) {
           try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+            const apiUrl = API_BASE_URL;
             const res = await fetch(`${apiUrl}/auth/google`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -92,7 +93,7 @@ export const authConfig: NextAuthConfig = {
         const { email, password } = parsed.data;
 
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+          const apiUrl = API_BASE_URL;
           const res = await fetch(`${apiUrl}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

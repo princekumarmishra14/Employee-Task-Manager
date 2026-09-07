@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/config/api";
 
 export async function POST(request: Request) {
   console.log("Forgot Password API Hit");
   try {
     const body = await request.json();
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api"}/auth/forgot-password`;
+    const backendUrl = `${API_BASE_URL}/auth/forgot-password`;
     
     console.log(`[Next.js API Router] Proxying forgot-password to ${backendUrl}...`);
     const response = await fetch(backendUrl, {

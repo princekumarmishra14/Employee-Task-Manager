@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/config/api";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get("token") || "";
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api"}/auth/verify-email?token=${encodeURIComponent(token)}`;
+    const backendUrl = `${API_BASE_URL}/auth/verify-email?token=${encodeURIComponent(token)}`;
 
     const response = await fetch(backendUrl, {
       method: "GET",

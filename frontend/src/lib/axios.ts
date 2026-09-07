@@ -14,10 +14,11 @@
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from "axios";
+import { API_BASE_URL } from "@/config/api";
 
 // ─── Axios Instance ───────────────────────────────────────────────────────────
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5001/api";
+const BASE_URL = API_BASE_URL;
 
 export const axiosClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,

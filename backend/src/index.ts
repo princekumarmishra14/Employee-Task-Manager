@@ -42,12 +42,13 @@ if (PORT === 5000) {
   PORT = 5001;
 }
 
-// Configure CORS to dynamically allow localhost and local network IP origins
+// Configure CORS to dynamically allow localhost, local network, Netlify and Render origins
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "http://127.0.0.1:3000",
-  "http://127.0.0.1:3001"
+  "http://127.0.0.1:3001",
+  "https://employee-task-manager-prince.netlify.app",
 ];
 
 app.use(
@@ -59,14 +60,18 @@ app.use(
       const isLocalIP = /^http:\/\/192\.168\./.test(origin) || 
                         /^http:\/\/10\./.test(origin) || 
                         /^http:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\./.test(origin);
+      const isNetlify = origin.endsWith(".netlify.app") || origin.includes("netlify.app");
+      const isRender = origin.endsWith(".onrender.com");
                         
-      if (isLocalhost || isLocalIP || allowedOrigins.includes(origin)) {
+      if (isLocalhost || isLocalIP || isNetlify || isRender || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(null, false);
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With", "Cache-Control"],
   })
 );
 

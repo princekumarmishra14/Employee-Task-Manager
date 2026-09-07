@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/config/api";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api"}/auth/resend-verification`;
+    const backendUrl = `${API_BASE_URL}/auth/resend-verification`;
     
     const response = await fetch(backendUrl, {
       method: "POST",

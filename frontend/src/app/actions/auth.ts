@@ -9,6 +9,7 @@
 import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
+import { API_BASE_URL } from "@/config/api";
 
 export interface LoginResult {
   error?: string;
@@ -116,7 +117,7 @@ export async function signupAction(
   };
 
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+    const apiUrl = API_BASE_URL;
     const res = await fetch(`${apiUrl}/auth/signup`, {
       method: "POST",
       headers: {

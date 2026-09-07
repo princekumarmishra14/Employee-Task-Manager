@@ -50,9 +50,9 @@ const nextConfig: NextConfig = {
                 : "script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client",               // Production: no eval
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://ui-avatars.com https://avatars.githubusercontent.com https://images.unsplash.com https://randomuser.me https://lh3.googleusercontent.com",
-              // ws/wss for Next.js HMR in dev; localhost for Express API; Google authentication connection
-              `connect-src 'self' http://localhost:5001 http://localhost:3000 ws://localhost:3000 https://accounts.google.com ${isDev ? "ws://localhost:* wss://localhost:*" : ""}`.trim(),
+              "img-src 'self' data: blob: https://ui-avatars.com https://avatars.githubusercontent.com https://images.unsplash.com https://randomuser.me https://lh3.googleusercontent.com https://employee-task-manager-api.onrender.com https://*.onrender.com",
+              // ws/wss for Next.js HMR in dev; Render API & Netlify for production; localhost for local Express API; Google auth
+              `connect-src 'self' https://employee-task-manager-api.onrender.com https://*.onrender.com https://employee-task-manager-prince.netlify.app https://*.netlify.app http://localhost:5001 http://localhost:3000 ws://localhost:3000 https://accounts.google.com ${isDev ? "ws://localhost:* wss://localhost:*" : ""}`.trim(),
               "frame-src 'self' https://accounts.google.com",
               "frame-ancestors 'none'",
               "object-src 'none'",

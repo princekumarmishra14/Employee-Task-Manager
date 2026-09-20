@@ -8,7 +8,7 @@ Built with **Next.js, TypeScript, Node.js, Express, Prisma, and PostgreSQL**, th
 
 ## 🚀 Live Demo
 
-**Live Application:** `YOUR_LIVE_URL`
+**Live Application:** `https://employee-task-manager-prince.netlify.app/`
 
 ### Demo Admin
 

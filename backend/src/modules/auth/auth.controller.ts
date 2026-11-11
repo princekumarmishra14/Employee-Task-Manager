@@ -262,21 +262,30 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     const userAgent = req.headers["user-agent"] || "unknown";
 
     // 1. Lookup user
-    const user = await prisma.user.findUnique({
-      where: { email: trimmedEmail },
-      include: {
-        employee: true,
-        role: {
-          include: {
-            rolePermissions: {
-              include: {
-                permission: true
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email: trimmedEmail },
+        include: {
+          employee: true,
+          role: {
+            include: {
+              rolePermissions: {
+                include: {
+                  permission: true
+                }
               }
             }
           }
-        }
-      },
-    });
+        },
+      });
+    } catch (dbErr: any) {
+      console.error("[Auth Controller] Database connection error during login:", dbErr?.message || dbErr);
+      return res.status(503).json({
+        success: false,
+        message: "Database service is temporarily unavailable. Please verify the PostgreSQL connection.",
+      });
+    }
 
     if (!user || !user.isActive) {
       return res.status(401).json({ success: false, message: "Invalid email or password." });

@@ -6,11 +6,12 @@
 
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Loader2 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
+import { isGoogleAuthConfigured } from "@/providers/GoogleProvider";
 
 interface GoogleButtonProps {
   onSuccess: (credentialResponse: CredentialResponse) => void;
@@ -21,7 +22,16 @@ interface GoogleButtonProps {
 
 export function GoogleButton({ onSuccess, onError, isLoading = false, disabled = false }: GoogleButtonProps) {
   const { isRtl } = useTranslation();
-  const { isDark, mounted } = useTheme();
+  const { isDark } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isGoogleAuthConfigured()) {
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -36,13 +46,21 @@ export function GoogleButton({ onSuccess, onError, isLoading = false, disabled =
     );
   }
 
-  // Fallback to outline/light style during SSR or before hydration
-  const activeGoogleTheme = mounted && isDark ? "filled_black" : "outline";
+  // Fallback placeholder during SSR and initial client pass to avoid hydration mismatches
+  if (!mounted) {
+    return (
+      <div 
+        className="w-[348px] h-[40px] rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 select-none"
+        aria-hidden="true"
+      />
+    );
+  }
+
+  const activeGoogleTheme = isDark ? "filled_black" : "outline";
 
   return (
     <div className={`w-full flex justify-center focus-within:ring-2 focus-within:ring-brand-primary focus-within:ring-offset-2 rounded-full transition-all duration-200 ${disabled ? "opacity-50 pointer-events-none" : ""}`}>
       <GoogleLogin
-        key={mounted && isDark ? "dark" : "light"}
         onSuccess={onSuccess}
         onError={() => onError("Google authentication failed. Please try again.")}
         theme={activeGoogleTheme}

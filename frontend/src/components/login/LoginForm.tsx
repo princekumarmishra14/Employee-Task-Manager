@@ -14,6 +14,7 @@ import PasswordChecklist from "./PasswordChecklist";
 import GoogleButton from "./GoogleButton";
 import RoleQuickLogin, { DemoRole } from "./RoleQuickLogin";
 import { useGoogleLogin } from "@/hooks/useGoogleLogin";
+import { isGoogleAuthConfigured } from "@/providers/GoogleProvider";
 
 const loginSchema = z.object({
   email: z
@@ -34,6 +35,7 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const { t } = useTranslation();
+  const isGoogleEnabled = isGoogleAuthConfigured();
 
   const [serverError, setServerError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -288,23 +290,27 @@ export default function LoginForm({ isRtl = false }: LoginFormProps) {
       </div>
 
       {/* OR separator */}
-      <div className="flex items-center gap-3 py-2.5 select-none">
-        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
-        <span className="text-[10px] font-bold text-text-muted/60 tracking-wider">
-          {isRtl ? "أو تابع باستخدام" : "Or continue"}
-        </span>
-        <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
-      </div>
+      {isGoogleEnabled && (
+        <div className="flex items-center gap-3 py-2.5 select-none">
+          <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
+          <span className="text-[10px] font-bold text-text-muted/60 tracking-wider">
+            {isRtl ? "أو تابع باستخدام" : "Or continue"}
+          </span>
+          <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
+        </div>
+      )}
 
       {/* Google SSO button */}
-      <div className="flex justify-center w-full min-h-[44px]">
-        <GoogleButton
-          onSuccess={handleGoogleSuccess}
-          onError={(err) => setServerError(err)}
-          isLoading={isGooglePending || isPending}
-          disabled={isPending || isGooglePending}
-        />
-      </div>
+      {isGoogleEnabled && (
+        <div className="flex justify-center w-full min-h-[44px]">
+          <GoogleButton
+            onSuccess={handleGoogleSuccess}
+            onError={(err) => setServerError(err)}
+            isLoading={isGooglePending || isPending}
+            disabled={isPending || isGooglePending}
+          />
+        </div>
+      )}
 
       {/* Don't have an account link */}
       <div className="text-center text-xs font-medium text-text-secondary select-none pt-1">

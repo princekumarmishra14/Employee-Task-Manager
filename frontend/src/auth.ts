@@ -109,6 +109,15 @@ export const authConfig: NextAuthConfig = {
             if (data.isUnverified) {
               throw new Error("EMAIL_UNVERIFIED");
             }
+            if (
+              res.status >= 500 ||
+              res.status === 503 ||
+              data.message?.toLowerCase().includes("database") ||
+              data.message?.toLowerCase().includes("prisma") ||
+              data.message?.includes("Can't reach")
+            ) {
+              throw new Error("DATABASE_UNAVAILABLE");
+            }
             return null;
           }
 
@@ -130,7 +139,13 @@ export const authConfig: NextAuthConfig = {
             refreshToken,
           };
           } catch (err) {
-            if (err instanceof Error && (err.message === "ACCOUNT_LOCKED" || err.message === "EMAIL_UNVERIFIED")) throw err;
+            if (
+              err instanceof Error &&
+              (err.message === "ACCOUNT_LOCKED" ||
+                err.message === "EMAIL_UNVERIFIED" ||
+                err.message === "DATABASE_UNAVAILABLE")
+            )
+              throw err;
             console.error("[NextAuth Auth] Delegate login error:", err);
             return null;
           }

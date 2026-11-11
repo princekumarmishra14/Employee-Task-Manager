@@ -1,6 +1,6 @@
 /**
  * frontend/src/providers/GoogleProvider.tsx
- * Component to wrap context scopes with GoogleOAuthProvider.
+ * Component to wrap context scopes with GoogleOAuthProvider conditionally.
  */
 
 "use client";
@@ -8,15 +8,26 @@
 import React from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+export function isGoogleAuthConfigured(): boolean {
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim();
+  return Boolean(
+    clientId &&
+    clientId !== "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com" &&
+    !clientId.startsWith("YOUR_GOOGLE_CLIENT_ID")
+  );
+}
 
 export default function GoogleProvider({ children }: { children: React.ReactNode }) {
-  if (!GOOGLE_CLIENT_ID) {
-    console.warn("[GoogleProvider] NEXT_PUBLIC_GOOGLE_CLIENT_ID is not configured.");
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim() || "";
+  const configured = isGoogleAuthConfigured();
+
+  if (!configured) {
+    // If not configured, do not mount GoogleOAuthProvider to avoid HTTP 400 and redundant script loads
+    return <>{children}</>;
   }
 
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={clientId}>
       {children}
     </GoogleOAuthProvider>
   );

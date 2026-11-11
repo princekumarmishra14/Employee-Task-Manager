@@ -39,7 +39,7 @@ export async function loginAction(
         case "CredentialsSignin":
           return { error: "Invalid email or password. Please try again." };
         default:
-          // Check for custom error messages (ACCOUNT_LOCKED, EMAIL_UNVERIFIED)
+          // Check for custom error messages (ACCOUNT_LOCKED, EMAIL_UNVERIFIED, DATABASE_UNAVAILABLE)
           if (err.message?.includes("ACCOUNT_LOCKED")) {
             return {
               error:
@@ -48,6 +48,12 @@ export async function loginAction(
           }
           if (err.message?.includes("EMAIL_UNVERIFIED")) {
             return { error: "EMAIL_UNVERIFIED" };
+          }
+          if (err.message?.includes("DATABASE_UNAVAILABLE")) {
+            return {
+              error:
+                "Database service is currently unavailable. Please verify the Render PostgreSQL database is active and reachable.",
+            };
           }
           return { error: "Login failed. Please try again." };
       }

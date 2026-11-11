@@ -2,10 +2,12 @@
 
 import React from "react";
 import { useDBStore } from "@/store/dbStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Globe, ChevronDown } from "lucide-react";
 
 export default function LanguageSwitcher() {
-  const { currentLanguage, setLanguage } = useDBStore();
+  const { currentLanguage } = useTranslation();
+  const setLanguage = useDBStore((state) => state.setLanguage);
 
   const toggleLanguage = () => {
     const nextLang = currentLanguage === "en" ? "ar" : "en";

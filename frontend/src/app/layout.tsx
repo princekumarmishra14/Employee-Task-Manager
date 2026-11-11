@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     "Enterprise SaaS workforce and task management dashboard — manage employees, tasks, projects, and teams at scale.",
   keywords: ["employee management", "task manager", "enterprise", "RBAC", "workforce"],
   robots: { index: false, follow: false }, // Private enterprise app — no indexing
+  referrer: "strict-origin-when-cross-origin",
 };
 
 export default function RootLayout({
@@ -41,18 +42,15 @@ export default function RootLayout({
         {/* Theme detection script — inlined to prevent flash-of-wrong-theme (FOWT).
          * Security: This script only reads from localStorage and sets CSS classes.
          * It contains NO user data and no dynamic values — safe as a static inline script.
-         * See eslint.config.mjs for no-sync-scripts override (dangerouslySetInnerHTML,
-         * not a sync src= script).
+         * Note: Security headers such as X-Frame-Options and X-Content-Type-Options are
+         * strictly enforced at HTTP response level (next.config.ts & netlify.toml) as
+         * X-Frame-Options is invalid when configured inside meta tags.
          * */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var s=localStorage.getItem('etm-theme-store');var t='system';if(s){var p=JSON.parse(s);if(p&&p.state&&p.state.theme)t=p.state.theme;}var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`,
           }}
         />
-        {/* Security Headers (also enforced at edge via next.config.ts) */}
-        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
-        <meta httpEquiv="X-Frame-Options" content="DENY" />
-        <meta name="referrer" content="strict-origin-when-cross-origin" />
       </head>
       <body className="min-h-full flex flex-col font-sans">
         <GoogleProvider>

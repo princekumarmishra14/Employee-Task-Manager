@@ -30,6 +30,7 @@ import cors from "cors";
 import path from "path";
 import apiRoutes from "./routes/api.routes";
 import { EmailService } from "./services/email/email.service";
+import prisma from "./lib/prisma";
 
 const app = express();
 
@@ -97,6 +98,21 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "UP", timestamp: new Date() });
 });
 
+// Deep health check endpoint to inspect database connectivity without exposing credentials
+app.get("/health/db", async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ status: "UP", database: "CONNECTED", timestamp: new Date() });
+  } catch (err: any) {
+    res.status(503).json({
+      status: "DEGRADED",
+      database: "DISCONNECTED",
+      message: "Database server unreachable",
+      timestamp: new Date(),
+    });
+  }
+});
+
 // Primary route dispatcher
 // Registers API sub-routers (Auth, Employee, Tasks, system controllers) under the '/api' prefix namespace.
 app.use("/api", apiRoutes);
@@ -106,6 +122,22 @@ app.use("/api", apiRoutes);
 // Prevents stack trace leakages to client, formatting client-safe responses.
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("[Express API Error]:", err);
+
+  const isDbConnectionError = 
+    err.message?.includes("Can't reach database server") ||
+    err.message?.includes("PrismaClientInitializationError") ||
+    err.code === "P1001" ||
+    err.code === "P1002" ||
+    err.code === "P1003" ||
+    err.code === "P1017";
+
+  if (isDbConnectionError) {
+    return res.status(503).json({
+      success: false,
+      message: "Database service is temporarily unavailable. Please verify the PostgreSQL connection.",
+    });
+  }
+
   const status = err.statusCode || err.status || 500;
   const message = err.message || "An unexpected server error occurred.";
   return res.status(status).json({

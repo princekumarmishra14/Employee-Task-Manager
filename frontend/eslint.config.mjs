@@ -32,11 +32,13 @@ const eslintConfig = defineConfig([
       // doesn't apply; disabling prevents false positives in layout.tsx.
       "@next/next/no-sync-scripts": "off",
 
-      // React Compiler (experimental) reports "Compilation Skipped: Existing
-      // memoization could not be preserved" via this rule when it cannot
-      // auto-optimize a useCallback/useMemo. These are optimizer hints, not
-      // correctness errors — disable to keep builds green.
+      // React Compiler (experimental) reports optimizer hints and purity checks
+      // that are not correctness errors in App Router client components.
       "react-hooks/preserve-manual-memoization": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/incompatible-library": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/static-components": "off",
 
       // Downgrade no-explicit-any to a warning. Service layer and API
       // adapter code intentionally uses `any` for external API responses

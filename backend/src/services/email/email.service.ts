@@ -31,6 +31,7 @@ const transporter = nodemailer.createTransport({
 
 export class EmailService {
   private static isProcessing = false;
+  private static hasLoggedTableWarning = false;
 
   /**
    * Verify SMTP connection status.
@@ -92,6 +93,9 @@ export class EmailService {
         take: 10,
       });
 
+      // Reset warning flag on successful query execution
+      this.hasLoggedTableWarning = false;
+
       if (pendingMails.length === 0) {
         this.isProcessing = false;
         return;
@@ -147,7 +151,23 @@ export class EmailService {
         }
       }
     } catch (err: any) {
-      console.error("[EmailService] Queue worker error:", err.message || err);
+      const isMissingTableOrDbDown =
+        err?.code === "P2021" ||
+        err?.code === "P1001" ||
+        err?.code === "P1002" ||
+        err?.code === "P1003" ||
+        err?.code === "P1017" ||
+        err?.message?.includes("does not exist") ||
+        err?.message?.includes("Can't reach database server");
+
+      if (isMissingTableOrDbDown) {
+        if (!this.hasLoggedTableWarning) {
+          console.warn("[EmailService] Email queue table or database is temporarily unavailable. Queue processing will resume once schema is migrated and database is online.");
+          this.hasLoggedTableWarning = true;
+        }
+      } else {
+        console.error("[EmailService] Queue worker error:", err.message || err);
+      }
     } finally {
       this.isProcessing = false;
     }

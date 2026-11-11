@@ -149,13 +149,29 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 
 // Launch server instance
 const server = app.listen(PORT, async () => {
-  console.log(`🚀 Express server running on http://localhost:${PORT}`);
+  console.log(`🚀 Express server running on port ${PORT}`);
+
+  // Inspect database connectivity and table readiness on boot
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    console.log("✅ Database connectivity established.");
+
+    const roleCount = await prisma.role.count().catch(() => null);
+    if (roleCount === null) {
+      console.warn("⚠️ Core database tables not detected. Ensure 'prisma migrate deploy' executes before starting the application.");
+    } else {
+      console.log(`📊 Database schema verified (${roleCount} system roles present).`);
+    }
+  } catch (dbErr: any) {
+    console.warn("⚠️ Database is currently unreachable during boot. Operating in degraded mode (health checks active, API returns 503 until PostgreSQL is reachable).");
+  }
+
   await EmailService.verifyConnection();
 
   // Start background email queue worker (runs every 5 seconds)
   setInterval(() => {
-    EmailService.processQueue().catch((err) => {
-      console.error("[EmailQueue Worker Error]:", err);
+    EmailService.processQueue().catch(() => {
+      // Errors gracefully handled and throttled in EmailService
     });
   }, 5000);
 });

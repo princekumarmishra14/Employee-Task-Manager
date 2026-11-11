@@ -714,160 +714,169 @@ async function main() {
   const allAssignableIds = [...managerIds, ...employeeUserIds];
   const superAdminId = userIds[0];
 
-  // 5. TASKS (100)
-  console.log("\n📋 Seeding tasks...");
-  const statuses: TaskStatus[] = ["UNASSIGNED", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "OVERDUE", "ARCHIVED"];
-  const priorities: TaskPriority[] = ["LOW", "MEDIUM", "HIGH", "ESCALATED"];
-  const statusWeights = [5, 20, 30, 25, 15, 5]; // realistic distribution
-
-  function weightedStatus(): TaskStatus {
-    const total = statusWeights.reduce((a, b) => a + b, 0);
-    let r = Math.random() * total;
-    for (let i = 0; i < statuses.length; i++) {
-      r -= statusWeights[i];
-      if (r <= 0) return statuses[i];
-    }
-    return "IN_PROGRESS";
-  }
-
+  // 5. TASKS (100) — IDEMPOTENT CHECK
+  console.log("\n📋 Checking tasks and operational mock data...");
+  const existingTaskCount = await prisma.task.count();
   const taskIds: string[] = [];
-  for (let i = 0; i < 100; i++) {
-    const status = weightedStatus();
-    const assigneeId = status === "UNASSIGNED" ? null : pick(allAssignableIds);
-    const deptName = pick(deptNames);
-    const deptId = deptRecords[deptName];
-    const deptTeamKeys = allTeamKeys.filter((k) => k.startsWith(`${deptName}:`));
-    const teamId = teamRecords[pick(deptTeamKeys)];
-    const projectId = pick(projectIds);
-    const daysOffset = status === "OVERDUE" ? randInt(-30, -1) : randInt(1, 90);
-
-    const task = await prisma.task.create({
-      data: {
-        title: TASK_TITLES[i % TASK_TITLES.length],
-        description: pick(TASK_DESCRIPTIONS),
-        priority: pick(priorities),
-        status,
-        dueDate: daysFromNow(daysOffset),
-        startDate: daysAgo(randInt(0, 30)),
-        completedAt: status === "COMPLETED" ? daysAgo(randInt(1, 14)) : null,
-        estimatedHours: pick([null, 8, 16, 24, 40, 80]),
-        tags: pick(["backend,api", "frontend,ui", "infra,devops", "security", "analytics,data", "mobile", ""]),
-        assigneeId,
-        departmentId: deptId,
-        teamId,
-        projectId,
-        isActive: true,
-        createdBy: "seed",
-        updatedBy: "seed",
-      },
-    });
-    taskIds.push(task.id);
-    if ((i + 1) % 10 === 0) process.stdout.write(`  ✓ ${i + 1} tasks seeded\n`);
-  }
-
-  // 6. COMMENTS
-  console.log("\n💬 Seeding comments...");
   let commentCount = 0;
-  for (const taskId of taskIds.slice(0, 60)) {
-    const n = randInt(1, 4);
-    for (let j = 0; j < n; j++) {
-      const authorId = pick(allAssignableIds);
-      const userInfo = await prisma.user.findUnique({ where: { id: authorId }, include: { employee: true } });
-      await prisma.comment.create({
-        data: {
-          taskId,
-          authorId,
-          authorName: userInfo?.employee?.fullName ?? "System",
-          content: pick(COMMENT_TEXTS),
-        },
-      });
-      commentCount++;
-    }
-  }
-  console.log(`  ✓ ${commentCount} comments seeded`);
-
-  // 7. AUDIT LOGS (50)
-  console.log("\n📜 Seeding audit logs...");
-  const auditActions: AuditAction[] = ["CREATE", "UPDATE", "DELETE", "STATUS_CHANGE", "ASSIGNMENT_CHANGE", "LOGIN", "ROLE_CHANGE"];
-  const auditEntities: AuditEntity[] = ["EMPLOYEE", "TASK", "DEPARTMENT", "PROJECT", "TEAM"];
-
-  const sampleUsers = await prisma.user.findMany({
-    take: 10,
-    include: { employee: true },
-  });
-
-  for (let i = 0; i < 50; i++) {
-    const actor = pick(sampleUsers);
-    const action = pick(auditActions);
-    const entity = pick(auditEntities);
-    await prisma.auditLog.create({
-      data: {
-        action,
-        entity,
-        entityId: pick([...taskIds, ...userIds]),
-        entityName: `Sample ${entity.toLowerCase()} record`,
-        details: `${action} operation performed on ${entity.toLowerCase()} by ${actor.employee?.fullName ?? actor.email}`,
-        performedBy: actor.employee?.fullName ?? actor.email,
-        performedById: actor.id,
-        ipAddress: `192.168.${randInt(1, 10)}.${randInt(1, 254)}`,
-      },
-    });
-  }
-  console.log("  ✓ 50 audit logs seeded");
-
-  // 8. ACTIVITIES (50)
-  console.log("\n⚡ Seeding activity feed...");
-  const activityTypes: ActivityType[] = [
-    "TASK_CREATED", "TASK_UPDATED", "TASK_STATUS_CHANGED", "TASK_ASSIGNED",
-    "TASK_COMPLETED", "EMPLOYEE_JOINED", "PROJECT_CREATED", "COMMENT_ADDED",
-  ];
-
-  for (let i = 0; i < 50; i++) {
-    const actor = pick(sampleUsers);
-    const actType = pick(activityTypes);
-    const taskId = actType.startsWith("TASK") ? pick(taskIds) : null;
-    await prisma.activity.create({
-      data: {
-        type: actType,
-        title: `${actor.employee?.fullName ?? actor.email} ${actType.toLowerCase().replace(/_/g, " ")}`,
-        description: `Activity record for ${actType} event in the system`,
-        actorId: actor.id,
-        actorName: actor.employee?.fullName ?? actor.email,
-        actorAvatar: actor.employee?.avatarUrl ?? null,
-        entityId: pick([...taskIds, ...userIds]),
-        entityType: actType.startsWith("TASK") ? "task" : "employee",
-        entityName: actType.startsWith("TASK") ? "Task" : "Employee",
-        taskId,
-        metadata: JSON.stringify({ source: "seed", index: i }),
-      },
-    });
-  }
-  console.log("  ✓ 50 activity feed entries seeded");
-
-  // 9. NOTIFICATIONS
-  console.log("\n🔔 Seeding notifications...");
   let notifCount = 0;
-  for (const userId of allAssignableIds.slice(0, 20)) {
-    const n = randInt(1, 3);
-    for (let j = 0; j < n; j++) {
-      await prisma.notification.create({
+
+  if (existingTaskCount > 0) {
+    console.log(`  - ${existingTaskCount} existing tasks found in database. Skipping duplicate mock data creation to preserve integrity.`);
+    const existing = await prisma.task.findMany({ select: { id: true }, take: 100 });
+    taskIds.push(...existing.map((t) => t.id));
+  } else {
+    console.log("  🌱 Seeding 100 initial demonstration tasks...");
+    const statuses: TaskStatus[] = ["UNASSIGNED", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "OVERDUE", "ARCHIVED"];
+    const priorities: TaskPriority[] = ["LOW", "MEDIUM", "HIGH", "ESCALATED"];
+    const statusWeights = [5, 20, 30, 25, 15, 5]; // realistic distribution
+
+    function weightedStatus(): TaskStatus {
+      const total = statusWeights.reduce((a, b) => a + b, 0);
+      let r = Math.random() * total;
+      for (let i = 0; i < statuses.length; i++) {
+        r -= statusWeights[i];
+        if (r <= 0) return statuses[i];
+      }
+      return "IN_PROGRESS";
+    }
+
+    for (let i = 0; i < 100; i++) {
+      const status = weightedStatus();
+      const assigneeId = status === "UNASSIGNED" ? null : pick(allAssignableIds);
+      const deptName = pick(deptNames);
+      const deptId = deptRecords[deptName];
+      const deptTeamKeys = allTeamKeys.filter((k) => k.startsWith(`${deptName}:`));
+      const teamId = teamRecords[pick(deptTeamKeys)];
+      const projectId = pick(projectIds);
+      const daysOffset = status === "OVERDUE" ? randInt(-30, -1) : randInt(1, 90);
+
+      const task = await prisma.task.create({
         data: {
-          userId,
-          title: pick(["Task Assigned to You", "Task Status Updated", "New Comment on Your Task", "Deadline Approaching"]),
-          message: pick([
-            "You have been assigned a new task. Please review and acknowledge.",
-            "The status of your task has been updated to IN_PROGRESS.",
-            "A new comment was added to a task you are following.",
-            "Your task deadline is in 2 days. Please update the status.",
-          ]),
-          isRead: Math.random() > 0.5,
-          link: `/tasks`,
+          title: TASK_TITLES[i % TASK_TITLES.length],
+          description: pick(TASK_DESCRIPTIONS),
+          priority: pick(priorities),
+          status,
+          dueDate: daysFromNow(daysOffset),
+          startDate: daysAgo(randInt(0, 30)),
+          completedAt: status === "COMPLETED" ? daysAgo(randInt(1, 14)) : null,
+          estimatedHours: pick([null, 8, 16, 24, 40, 80]),
+          tags: pick(["backend,api", "frontend,ui", "infra,devops", "security", "analytics,data", "mobile", ""]),
+          assigneeId,
+          departmentId: deptId,
+          teamId,
+          projectId,
+          isActive: true,
+          createdBy: "seed",
+          updatedBy: "seed",
         },
       });
-      notifCount++;
+      taskIds.push(task.id);
+      if ((i + 1) % 10 === 0) process.stdout.write(`  ✓ ${i + 1} tasks seeded\n`);
     }
+
+    // 6. COMMENTS
+    console.log("\n💬 Seeding comments...");
+    for (const taskId of taskIds.slice(0, 60)) {
+      const n = randInt(1, 4);
+      for (let j = 0; j < n; j++) {
+        const authorId = pick(allAssignableIds);
+        const userInfo = await prisma.user.findUnique({ where: { id: authorId }, include: { employee: true } });
+        await prisma.comment.create({
+          data: {
+            taskId,
+            authorId,
+            authorName: userInfo?.employee?.fullName ?? "System",
+            content: pick(COMMENT_TEXTS),
+          },
+        });
+        commentCount++;
+      }
+    }
+    console.log(`  ✓ ${commentCount} comments seeded`);
+
+    // 7. AUDIT LOGS (50)
+    console.log("\n📜 Seeding audit logs...");
+    const auditActions: AuditAction[] = ["CREATE", "UPDATE", "DELETE", "STATUS_CHANGE", "ASSIGNMENT_CHANGE", "LOGIN", "ROLE_CHANGE"];
+    const auditEntities: AuditEntity[] = ["EMPLOYEE", "TASK", "DEPARTMENT", "PROJECT", "TEAM"];
+
+    const sampleUsers = await prisma.user.findMany({
+      take: 10,
+      include: { employee: true },
+    });
+
+    for (let i = 0; i < 50; i++) {
+      const actor = pick(sampleUsers);
+      const action = pick(auditActions);
+      const entity = pick(auditEntities);
+      await prisma.auditLog.create({
+        data: {
+          action,
+          entity,
+          entityId: pick([...taskIds, ...userIds]),
+          entityName: `Sample ${entity.toLowerCase()} record`,
+          details: `${action} operation performed on ${entity.toLowerCase()} by ${actor.employee?.fullName ?? actor.email}`,
+          performedBy: actor.employee?.fullName ?? actor.email,
+          performedById: actor.id,
+          ipAddress: `192.168.${randInt(1, 10)}.${randInt(1, 254)}`,
+        },
+      });
+    }
+    console.log("  ✓ 50 audit logs seeded");
+
+    // 8. ACTIVITIES (50)
+    console.log("\n⚡ Seeding activity feed...");
+    const activityTypes: ActivityType[] = [
+      "TASK_CREATED", "TASK_UPDATED", "TASK_STATUS_CHANGED", "TASK_ASSIGNED",
+      "TASK_COMPLETED", "EMPLOYEE_JOINED", "PROJECT_CREATED", "COMMENT_ADDED",
+    ];
+
+    for (let i = 0; i < 50; i++) {
+      const actor = pick(sampleUsers);
+      const actType = pick(activityTypes);
+      const taskId = actType.startsWith("TASK") ? pick(taskIds) : null;
+      await prisma.activity.create({
+        data: {
+          type: actType,
+          title: `${actor.employee?.fullName ?? actor.email} ${actType.toLowerCase().replace(/_/g, " ")}`,
+          description: `Activity record for ${actType} event in the system`,
+          actorId: actor.id,
+          actorName: actor.employee?.fullName ?? actor.email,
+          actorAvatar: actor.employee?.avatarUrl ?? null,
+          entityId: pick([...taskIds, ...userIds]),
+          entityType: actType.startsWith("TASK") ? "task" : "employee",
+          entityName: actType.startsWith("TASK") ? "Task" : "Employee",
+          taskId,
+          metadata: JSON.stringify({ source: "seed", index: i }),
+        },
+      });
+    }
+    console.log("  ✓ 50 activity feed entries seeded");
+
+    // 9. NOTIFICATIONS
+    console.log("\n🔔 Seeding notifications...");
+    for (const userId of allAssignableIds.slice(0, 20)) {
+      const n = randInt(1, 3);
+      for (let j = 0; j < n; j++) {
+        await prisma.notification.create({
+          data: {
+            userId,
+            title: pick(["Task Assigned to You", "Task Status Updated", "New Comment on Your Task", "Deadline Approaching"]),
+            message: pick([
+              "You have been assigned a new task. Please review and acknowledge.",
+              "The status of your task has been updated to IN_PROGRESS.",
+              "A new comment was added to a task you are following.",
+              "Your task deadline is in 2 days. Please update the status.",
+            ]),
+            isRead: Math.random() > 0.5,
+            link: `/tasks`,
+          },
+        });
+        notifCount++;
+      }
+    }
+    console.log(`  ✓ ${notifCount} notifications seeded`);
   }
-  console.log(`  ✓ ${notifCount} notifications seeded`);
 
   // SUMMARY
   console.log("\n✅ Seed complete!\n");

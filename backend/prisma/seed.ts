@@ -68,12 +68,14 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   ADMIN: [
     "dashboard:view",
     "employees:view", "employees:create", "employees:update", "employees:delete",
-    "departments:view", "departments:create", "departments:update",
-    "teams:view", "teams:create", "teams:update",
-    "projects:view", "projects:create", "projects:update",
+    "departments:view", "departments:create", "departments:update", "departments:delete",
+    "teams:view", "teams:create", "teams:update", "teams:delete",
+    "projects:view", "projects:create", "projects:update", "projects:delete",
     "tasks:view", "tasks:create", "tasks:update", "tasks:delete", "tasks:assign",
     "reports:view",
-    "roles:view"
+    "audit_logs:view",
+    "settings:view", "settings:update",
+    "roles:view", "roles:manage"
   ],
   MANAGER: [
     "dashboard:view",
@@ -91,6 +93,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
   ],
   EMPLOYEE: [
     "dashboard:view",
+    "employees:view",
     "tasks:view", "tasks:update"
   ],
   VIEWER: [

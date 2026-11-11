@@ -15,21 +15,10 @@ export default function LoginLayout({ children }: LoginLayoutProps) {
         <div className="absolute inset-0 bg-mesh-gradient opacity-90 dark:opacity-85 transition-opacity duration-300" />
 
         {/* Noise overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.015] dark:opacity-[0.035]" 
-          style={{
-            backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")",
-          }}
-        />
+        <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.035] bg-noise-pattern" />
 
         {/* Dot grid */}
-        <div 
-          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06]" 
-          style={{
-            backgroundImage: "radial-gradient(rgba(148,163,184,0.15) 1px, transparent 1px)",
-            backgroundSize: "24px 24px"
-          }}
-        />
+        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] bg-dot-pattern" />
 
         {/* Ambient floating blurred orbs */}
         <div className="absolute top-[8%] left-[4%] w-80 h-80 rounded-full bg-slate-500/5 dark:bg-slate-500/10 blur-[90px] animate-[floatOrb_20s_ease-in-out_infinite]" />

@@ -33,32 +33,31 @@ export async function loginAction(
     });
     // Success — no error returned, caller handles redirect
     return {};
-  } catch (err) {
-    if (err instanceof AuthError) {
-      switch (err.type) {
-        case "CredentialsSignin":
-          return { error: "Invalid email or password. Please try again." };
-        default:
-          // Check for custom error messages (ACCOUNT_LOCKED, EMAIL_UNVERIFIED, DATABASE_UNAVAILABLE)
-          if (err.message?.includes("ACCOUNT_LOCKED")) {
-            return {
-              error:
-                "Your account has been temporarily locked due to multiple failed login attempts. Please try again in 15 minutes.",
-            };
-          }
-          if (err.message?.includes("EMAIL_UNVERIFIED")) {
-            return { error: "EMAIL_UNVERIFIED" };
-          }
-          if (err.message?.includes("DATABASE_UNAVAILABLE")) {
-            return {
-              error:
-                "Database service is currently unavailable. Please verify the Render PostgreSQL database is active and reachable.",
-            };
-          }
-          return { error: "Login failed. Please try again." };
-      }
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err || "");
+    if (errorMsg.includes("ACCOUNT_LOCKED")) {
+      return {
+        error:
+          "Your account has been temporarily locked due to multiple failed login attempts. Please try again in 15 minutes.",
+      };
     }
-    throw err; // Re-throw unexpected errors
+    if (errorMsg.includes("EMAIL_UNVERIFIED")) {
+      return { error: "EMAIL_UNVERIFIED" };
+    }
+    if (errorMsg.includes("DATABASE_UNAVAILABLE")) {
+      return {
+        error:
+          "Database service is currently unavailable. Please verify the Render PostgreSQL database is active and reachable.",
+      };
+    }
+    if (err instanceof AuthError) {
+      return { error: "Invalid email or password. Please try again." };
+    }
+    if (errorMsg.includes("CredentialsSignin") || errorMsg.includes("credential")) {
+      return { error: "Invalid email or password. Please try again." };
+    }
+    console.error("[loginAction] Handled login error:", err);
+    return { error: "Login failed. Please verify your credentials and network connection." };
   }
 }
 
@@ -75,16 +74,16 @@ export async function googleLoginAction(
       redirect: false,
     });
     return {};
-  } catch (err) {
-    if (err instanceof AuthError) {
-      if (err.message?.includes("GOOGLE_UNREGISTERED")) {
-        return {
-          error: "Access Denied. Your Google account is not pre-registered on the platform. Please contact your administrator."
-        };
-      }
-      return { error: "Google authentication failed. Please try again." };
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err || "");
+    if (errorMsg.includes("GOOGLE_UNREGISTERED")) {
+      return {
+        error:
+          "Access Denied. Your Google account is not pre-registered on the platform. Please contact your administrator.",
+      };
     }
-    throw err;
+    console.error("[googleLoginAction] Handled Google auth error:", err);
+    return { error: "Google authentication failed. Please try again." };
   }
 }
 

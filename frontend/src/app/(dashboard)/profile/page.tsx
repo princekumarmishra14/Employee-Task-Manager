@@ -22,6 +22,7 @@ import {
   Loader2
 } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
+import { isGoogleAuthConfigured } from "@/providers/GoogleProvider";
 import { connectGoogleAccount, disconnectGoogleAccount } from "@/services/googleAuth";
 import ProtectedRoute from "@/components/rbac/ProtectedRoute";
 import api from "@/lib/axios";
@@ -422,7 +423,7 @@ export default function ProfilePage() {
                         >
                           Disconnect Account
                         </button>
-                      ) : (
+                      ) : isGoogleAuthConfigured() ? (
                         <div className="relative">
                           <GoogleLogin
                             onSuccess={handleConnectGoogle}
@@ -433,6 +434,10 @@ export default function ProfilePage() {
                             text="signup_with"
                           />
                         </div>
+                      ) : (
+                        <span className="text-xs text-text-muted italic">
+                          Google account linking is not configured in this environment.
+                        </span>
                       )}
                     </div>
                   </div>

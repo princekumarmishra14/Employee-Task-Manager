@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Permission } from "@/constants/permissions";
 import AccessDeniedState from "./AccessDeniedState";
@@ -16,12 +17,21 @@ interface ProtectedRouteProps {
  * SUPER_ADMIN bypasses all checks.
  */
 export default function ProtectedRoute({ children, permission }: ProtectedRouteProps) {
-  const { can, isLoading } = useAuth();
+  const router = useRouter();
+  const { can, isLoading, status } = useAuth();
 
   const authorized = useMemo(() => can(permission), [permission, can]);
 
-  // While session is loading, render nothing to avoid flash of 403
-  if (isLoading) return null;
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [status, router]);
+
+  // While session is loading or unauthenticated redirect is in flight, do not flash 403 Access Denied
+  if (isLoading || status === "loading" || status === "unauthenticated") {
+    return null;
+  }
 
   if (!authorized) {
     return <AccessDeniedState />;

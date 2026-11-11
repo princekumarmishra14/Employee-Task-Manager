@@ -8,6 +8,7 @@ import { z } from "zod";
 import { signupAction } from "@/app/actions/auth";
 import GoogleButton from "@/components/login/GoogleButton";
 import { useGoogleLogin } from "@/hooks/useGoogleLogin";
+import { isGoogleAuthConfigured } from "@/providers/GoogleProvider";
 import Link from "next/link";
 import {
   User,
@@ -167,6 +168,7 @@ function SignupPageContent() {
   const router = useRouter();
   const { isRtl } = useTranslation();
   const [isPending, startTransition] = useTransition();
+  const isGoogleEnabled = isGoogleAuthConfigured();
   const [serverError, setServerError] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [successName, setSuccessName] = useState("");
@@ -430,13 +432,11 @@ function SignupPageContent() {
                         <select
                           id="department"
                           disabled={isPending}
-                          className={`block w-full h-12 px-4 rounded-[12px] text-text-primary text-sm font-semibold bg-transparent border border-slate-300 dark:border-slate-700 dark:border-slate-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 outline-none cursor-pointer appearance-none bg-no-repeat ${
+                          className={`block w-full h-12 px-4 rounded-[12px] text-text-primary text-sm font-semibold bg-transparent border border-slate-300 dark:border-slate-700 dark:border-slate-800 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/20 outline-none cursor-pointer appearance-none bg-no-repeat bg-chevron-pattern ${
                             errors.department ? "border-status-danger focus:ring-status-danger" : ""
                           }`}
                           style={{
                             backgroundPosition: isRtl ? "left 0.75rem center" : "right 0.75rem center",
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%252394A3B8' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'%3E%3C/path%3E%3C/svg%3E")`,
-                            backgroundSize: "0.9rem"
                           }}
                           {...register("department")}
                         >
@@ -752,7 +752,7 @@ function SignupPageContent() {
                   </div>
 
                   {/* Google SSO Option (visible on Step 1) */}
-                  {step === 1 && (
+                  {isGoogleEnabled && step === 1 && (
                     <div className="space-y-4 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/60 select-none">
                       <div className="flex items-center gap-3 select-none">
                         <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
